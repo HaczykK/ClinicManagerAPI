@@ -1,4 +1,4 @@
-﻿using System.ComponentModel;
+using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 
 namespace ClinicManagerAPI.Models
@@ -24,5 +24,8 @@ namespace ClinicManagerAPI.Models
 
         // Lista wizyt przypisanych do tego pacjenta
         public List<Visit> Visits { get; set; } = new List<Visit>();
+
+        // Lista dokumentacji medycznej pacjenta
+        public List<MedicalRecord> MedicalRecords { get; set; } = new List<MedicalRecord>();
     }
 }
