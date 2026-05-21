@@ -1,9 +1,10 @@
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using ClinicManagerAPI.Models;
 
 namespace ClinicManagerAPI.Data
 {
-    public class ApplicationDbContext : DbContext
+    public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
     {
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
             : base(options)
@@ -22,8 +23,6 @@ namespace ClinicManagerAPI.Data
         {
             base.OnModelCreating(modelBuilder);
 
-            // Additional configuration if needed
-            // For example, configuring the decimal precision for costs
             modelBuilder.Entity<ProcedurePerformed>()
                 .Property(p => p.ServiceCost)
                 .HasColumnType("decimal(18,2)");
@@ -31,6 +30,16 @@ namespace ClinicManagerAPI.Data
             modelBuilder.Entity<Medication>()
                 .Property(m => m.UnitPrice)
                 .HasColumnType("decimal(18,2)");
+
+            modelBuilder.Entity<ApplicationUser>()
+                .Property(u => u.FirstName)
+                .HasMaxLength(100)
+                .IsRequired();
+
+            modelBuilder.Entity<ApplicationUser>()
+                .Property(u => u.LastName)
+                .HasMaxLength(100)
+                .IsRequired();
         }
     }
 }
