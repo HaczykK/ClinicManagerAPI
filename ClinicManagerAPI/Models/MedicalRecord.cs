@@ -9,7 +9,12 @@ namespace ClinicManagerAPI.Models
         [Required]
         public string DocumentScanUrl { get; set; } = string.Empty;
 
-        // Relationship with Patient
+        public string? Description { get; set; }
+
+        public string? FileName { get; set; }
+
+        public DateTime UploadedAt { get; set; } = DateTime.UtcNow;
+
         public int PatientId { get; set; }
         public Patient? Patient { get; set; }
     }

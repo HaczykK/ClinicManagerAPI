@@ -12,7 +12,7 @@ namespace ClinicManagerAPI.Models
         [Required]
         public string Content { get; set; } = string.Empty;
 
-        public DateTime Timestamp { get; set; } = DateTime.Now;
+        public DateTime Timestamp { get; set; } = DateTime.UtcNow;
 
         // Relationship with Visit
         public int VisitId { get; set; }
