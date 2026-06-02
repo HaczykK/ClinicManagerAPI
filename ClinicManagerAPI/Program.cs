@@ -4,7 +4,9 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using ClinicManagerAPI.Data;
+using ClinicManagerAPI.Mappers;
 using ClinicManagerAPI.Models;
+using ClinicManagerAPI.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -54,6 +56,21 @@ builder.Services.AddAuthentication(options =>
 });
 
 builder.Services.AddAuthorization();
+
+builder.Services.AddScoped<PatientMapper>();
+builder.Services.AddScoped<VisitMapper>();
+builder.Services.AddScoped<MedicationMapper>();
+builder.Services.AddScoped<MedicalRecordMapper>();
+builder.Services.AddScoped<ClinicalNoteMapper>();
+builder.Services.AddScoped<ProcedureMapper>();
+builder.Services.AddScoped<PrescribedMedicationMapper>();
+
+builder.Services.AddScoped<IPatientService, PatientService>();
+builder.Services.AddScoped<IVisitService, VisitService>();
+builder.Services.AddScoped<IMedicationService, MedicationService>();
+builder.Services.AddScoped<IMedicalRecordService, MedicalRecordService>();
+builder.Services.AddScoped<IClinicalNoteService, ClinicalNoteService>();
+builder.Services.AddScoped<IProcedureService, ProcedureService>();
 
 builder.Services.AddControllers();
 builder.Services.AddOpenApi();

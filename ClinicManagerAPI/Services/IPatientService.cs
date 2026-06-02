@@ -1,0 +1,14 @@
+using ClinicManagerAPI.DTOs.Patients;
+
+namespace ClinicManagerAPI.Services
+{
+    public interface IPatientService
+    {
+        Task<IReadOnlyList<PatientListDto>> GetAllAsync();
+        Task<PatientDto?> GetByIdAsync(int id);
+        Task<PatientDto> CreateAsync(CreatePatientDto dto);
+        Task<PatientDto> UpdateAsync(int id, UpdatePatientDto dto);
+        Task DeleteAsync(int id);
+        Task<IReadOnlyList<PatientListDto>> SearchAsync(string query);
+    }
+}

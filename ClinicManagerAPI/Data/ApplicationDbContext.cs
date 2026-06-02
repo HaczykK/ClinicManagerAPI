@@ -23,6 +23,9 @@ namespace ClinicManagerAPI.Data
         {
             base.OnModelCreating(modelBuilder);
 
+            modelBuilder.Entity<Patient>()
+                .HasQueryFilter(p => !p.IsDeleted);
+
             modelBuilder.Entity<ProcedurePerformed>()
                 .Property(p => p.ServiceCost)
                 .HasColumnType("decimal(18,2)");

@@ -1,12 +1,9 @@
-using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 
-namespace ClinicManagerAPI.Models
+namespace ClinicManagerAPI.DTOs.Patients
 {
-    public class Patient
+    public class CreatePatientDto
     {
-        public int Id { get; set; }
-
         [Required(ErrorMessage = "Imię jest wymagane.")]
         [MaxLength(100)]
         public string FirstName { get; set; } = string.Empty;
@@ -19,17 +16,7 @@ namespace ClinicManagerAPI.Models
         [StringLength(11, MinimumLength = 11, ErrorMessage = "PESEL musi mieć dokładnie 11 znaków.")]
         public string Pesel { get; set; } = string.Empty;
 
-        // Znak zapytania oznacza, że numer ubezpieczenia jest opcjonalny
+        [MaxLength(50)]
         public string? InsuranceNumber { get; set; }
-
-        // Lista wizyt przypisanych do tego pacjenta
-        public List<Visit> Visits { get; set; } = new List<Visit>();
-
-        // Lista dokumentacji medycznej pacjenta
-        public List<MedicalRecord> MedicalRecords { get; set; } = new List<MedicalRecord>();
-
-        public bool IsDeleted { get; set; }
-
-        public DateTime? DeletedAt { get; set; }
     }
 }
