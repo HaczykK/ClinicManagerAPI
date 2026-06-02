@@ -13,5 +13,7 @@ namespace ClinicManagerAPI.Models
 
         [Column(TypeName = "decimal(18,2)")]
         public decimal UnitPrice { get; set; }
+
+        public List<PrescribedMedication> PrescribedMedications { get; set; } = new();
     }
 }

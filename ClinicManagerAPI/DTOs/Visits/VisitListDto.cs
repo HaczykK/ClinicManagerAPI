@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using ClinicManagerAPI.Models;
 
 namespace ClinicManagerAPI.DTOs.Visits
 {
@@ -10,11 +11,13 @@ namespace ClinicManagerAPI.DTOs.Visits
         public DateTime Date { get; set; }
 
         [Required]
-        [MaxLength(50)]
-        public string Status { get; set; } = string.Empty;
+        public VisitStatus Status { get; set; }
+
+        [MaxLength(450)]
+        public string? AssignedDoctorId { get; set; }
 
         [MaxLength(200)]
-        public string? AssignedDoctor { get; set; }
+        public string? AssignedDoctorName { get; set; }
 
         public int PatientId { get; set; }
     }

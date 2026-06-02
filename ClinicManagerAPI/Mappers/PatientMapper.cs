@@ -18,6 +18,7 @@ namespace ClinicManagerAPI.Mappers
         [MapperIgnoreTarget(nameof(Patient.MedicalRecords))]
         [MapperIgnoreTarget(nameof(Patient.IsDeleted))]
         [MapperIgnoreTarget(nameof(Patient.DeletedAt))]
+        [MapperIgnoreTarget(nameof(Patient.CreatedAt))]
         public partial Patient ToEntity(CreatePatientDto dto);
 
         [MapperIgnoreTarget(nameof(Patient.Id))]
@@ -25,6 +26,7 @@ namespace ClinicManagerAPI.Mappers
         [MapperIgnoreTarget(nameof(Patient.MedicalRecords))]
         [MapperIgnoreTarget(nameof(Patient.IsDeleted))]
         [MapperIgnoreTarget(nameof(Patient.DeletedAt))]
+        [MapperIgnoreTarget(nameof(Patient.CreatedAt))]
         public partial void ApplyUpdate(UpdatePatientDto dto, Patient patient);
     }
 }

@@ -11,16 +11,15 @@ namespace ClinicManagerAPI.Models
         public DateTime Date { get; set; }
 
         [Required]
-        public string Status { get; set; } = "Zaplanowana"; // Np. Zaplanowana, W trakcie, Zakończona, Anulowana
+        public VisitStatus Status { get; set; } = VisitStatus.Zaplanowana;
 
-        public string? AssignedDoctor { get; set; }
+        public string? AssignedDoctorId { get; set; }
+        public ApplicationUser? AssignedDoctor { get; set; }
 
-        // Powiązanie z Pacjentem (Klucz obcy w bazie danych)
         public int PatientId { get; set; }
         public Patient? Patient { get; set; }
 
-        // Powiązane procedury i notatki
-        public List<ProcedurePerformed> ProceduresPerformed { get; set; } = new List<ProcedurePerformed>();
-        public List<ClinicalNote> ClinicalNotes { get; set; } = new List<ClinicalNote>();
+        public List<ProcedurePerformed> ProceduresPerformed { get; set; } = new();
+        public List<ClinicalNote> ClinicalNotes { get; set; } = new();
     }
 }

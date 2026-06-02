@@ -43,6 +43,12 @@ namespace ClinicManagerAPI.Data
                 .Property(u => u.LastName)
                 .HasMaxLength(100)
                 .IsRequired();
+
+            modelBuilder.Entity<Visit>()
+                .HasOne(v => v.AssignedDoctor)
+                .WithMany()
+                .HasForeignKey(v => v.AssignedDoctorId)
+                .OnDelete(DeleteBehavior.SetNull);
         }
     }
 }

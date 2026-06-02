@@ -16,13 +16,6 @@ namespace ClinicManagerAPI.Migrations
                 table: "Patients",
                 type: "datetime2",
                 nullable: true);
-
-            migrationBuilder.AddColumn<bool>(
-                name: "IsDeleted",
-                table: "Patients",
-                type: "bit",
-                nullable: false,
-                defaultValue: false);
         }
 
         /// <inheritdoc />
@@ -30,10 +23,6 @@ namespace ClinicManagerAPI.Migrations
         {
             migrationBuilder.DropColumn(
                 name: "DeletedAt",
-                table: "Patients");
-
-            migrationBuilder.DropColumn(
-                name: "IsDeleted",
                 table: "Patients");
         }
     }

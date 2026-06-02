@@ -1,20 +1,13 @@
 using ClinicManagerAPI.Data;
 using ClinicManagerAPI.DTOs.Visits;
 using ClinicManagerAPI.Mappers;
+using ClinicManagerAPI.Models;
 using Microsoft.EntityFrameworkCore;
 
 namespace ClinicManagerAPI.Services
 {
     public class VisitService : IVisitService
     {
-        private static readonly HashSet<string> ValidStatuses = new(StringComparer.OrdinalIgnoreCase)
-        {
-            "Zaplanowana",
-            "W trakcie",
-            "Zakończona",
-            "Anulowana"
-        };
-
         private readonly ApplicationDbContext _context;
         private readonly VisitMapper _mapper;
 
@@ -26,7 +19,7 @@ namespace ClinicManagerAPI.Services
 
         public async Task<IReadOnlyList<VisitListDto>> GetAllAsync()
         {
-            var visits = await _context.Visits
+            var visits = await QueryWithDoctor()
                 .OrderByDescending(v => v.Date)
                 .ToListAsync();
 
@@ -35,7 +28,7 @@ namespace ClinicManagerAPI.Services
 
         public async Task<VisitDto?> GetByIdAsync(int id)
         {
-            var visit = await _context.Visits.FindAsync(id);
+            var visit = await QueryWithDoctor().FirstOrDefaultAsync(v => v.Id == id);
             return visit is null ? null : _mapper.ToDto(visit);
         }
 
@@ -43,7 +36,7 @@ namespace ClinicManagerAPI.Services
         {
             await EnsurePatientExistsAsync(patientId);
 
-            var visits = await _context.Visits
+            var visits = await QueryWithDoctor()
                 .Where(v => v.PatientId == patientId)
                 .OrderByDescending(v => v.Date)
                 .ToListAsync();
@@ -51,18 +44,17 @@ namespace ClinicManagerAPI.Services
             return _mapper.ToListDtos(visits);
         }
 
-        public async Task<IReadOnlyList<VisitListDto>> GetByDoctorIdAsync(string doctorName)
+        public async Task<IReadOnlyList<VisitListDto>> GetByDoctorIdAsync(string doctorId)
         {
-            if (string.IsNullOrWhiteSpace(doctorName))
+            if (string.IsNullOrWhiteSpace(doctorId))
             {
-                throw new ArgumentException("Nazwa lekarza jest wymagana.", nameof(doctorName));
+                throw new ArgumentException("Identyfikator lekarza jest wymagany.", nameof(doctorId));
             }
 
-            var normalizedDoctorName = doctorName.Trim();
+            await EnsureDoctorExistsAsync(doctorId);
 
-            var visits = await _context.Visits
-                .Where(v => v.AssignedDoctor != null &&
-                            v.AssignedDoctor.ToLower() == normalizedDoctorName.ToLower())
+            var visits = await QueryWithDoctor()
+                .Where(v => v.AssignedDoctorId == doctorId)
                 .OrderByDescending(v => v.Date)
                 .ToListAsync();
 
@@ -72,12 +64,13 @@ namespace ClinicManagerAPI.Services
         public async Task<VisitDto> CreateAsync(CreateVisitDto dto)
         {
             await EnsurePatientExistsAsync(dto.PatientId);
-            ValidateStatus(dto.Status);
+            await EnsureDoctorExistsAsync(dto.AssignedDoctorId);
 
             var visit = _mapper.ToEntity(dto);
             _context.Visits.Add(visit);
             await _context.SaveChangesAsync();
 
+            await _context.Entry(visit).Reference(v => v.AssignedDoctor).LoadAsync();
             return _mapper.ToDto(visit);
         }
 
@@ -87,23 +80,24 @@ namespace ClinicManagerAPI.Services
                 ?? throw new KeyNotFoundException($"Wizyta o id {id} nie została znaleziona.");
 
             await EnsurePatientExistsAsync(dto.PatientId);
-            ValidateStatus(dto.Status);
+            await EnsureDoctorExistsAsync(dto.AssignedDoctorId);
 
             _mapper.ApplyUpdate(dto, visit);
             await _context.SaveChangesAsync();
 
+            await _context.Entry(visit).Reference(v => v.AssignedDoctor).LoadAsync();
             return _mapper.ToDto(visit);
         }
 
-        public async Task<VisitDto> UpdateStatusAsync(int id, string status)
+        public async Task<VisitDto> UpdateStatusAsync(int id, VisitStatus status)
         {
             var visit = await _context.Visits.FindAsync(id)
                 ?? throw new KeyNotFoundException($"Wizyta o id {id} nie została znaleziona.");
 
-            ValidateStatus(status);
-            visit.Status = status.Trim();
+            visit.Status = status;
             await _context.SaveChangesAsync();
 
+            await _context.Entry(visit).Reference(v => v.AssignedDoctor).LoadAsync();
             return _mapper.ToDto(visit);
         }
 
@@ -112,13 +106,16 @@ namespace ClinicManagerAPI.Services
             var today = DateTime.Today;
             var tomorrow = today.AddDays(1);
 
-            var visits = await _context.Visits
+            var visits = await QueryWithDoctor()
                 .Where(v => v.Date >= today && v.Date < tomorrow)
                 .OrderBy(v => v.Date)
                 .ToListAsync();
 
             return _mapper.ToListDtos(visits);
         }
+
+        private IQueryable<Visit> QueryWithDoctor() =>
+            _context.Visits.Include(v => v.AssignedDoctor);
 
         private async Task EnsurePatientExistsAsync(int patientId)
         {
@@ -128,13 +125,16 @@ namespace ClinicManagerAPI.Services
             }
         }
 
-        private static void ValidateStatus(string status)
+        private async Task EnsureDoctorExistsAsync(string? doctorId)
         {
-            if (!ValidStatuses.Contains(status.Trim()))
+            if (string.IsNullOrWhiteSpace(doctorId))
             {
-                throw new ArgumentException(
-                    $"Nieprawidłowy status wizyty. Dozwolone wartości: {string.Join(", ", ValidStatuses)}.",
-                    nameof(status));
+                return;
+            }
+
+            if (!await _context.Users.AnyAsync(u => u.Id == doctorId))
+            {
+                throw new KeyNotFoundException($"Lekarz o id {doctorId} nie został znaleziony.");
             }
         }
     }
