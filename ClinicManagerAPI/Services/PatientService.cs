@@ -1,4 +1,5 @@
 using ClinicManagerAPI.Data;
+using ClinicManagerAPI.DTOs;
 using ClinicManagerAPI.DTOs.Patients;
 using ClinicManagerAPI.Mappers;
 using Microsoft.EntityFrameworkCore;
@@ -16,14 +17,26 @@ namespace ClinicManagerAPI.Services
             _mapper = mapper;
         }
 
-        public async Task<IReadOnlyList<PatientListDto>> GetAllAsync()
+        public async Task<PagedResult<PatientListDto>> GetAllAsync(int page = 1, int pageSize = 10)
         {
-            var patients = await _context.Patients
+            var query = _context.Patients
                 .OrderBy(p => p.LastName)
-                .ThenBy(p => p.FirstName)
+                .ThenBy(p => p.FirstName);
+
+            var totalCount = await query.CountAsync();
+
+            var patients = await query
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
                 .ToListAsync();
 
-            return _mapper.ToListDtos(patients);
+            return new PagedResult<PatientListDto>
+            {
+                Items = _mapper.ToListDtos(patients),
+                TotalCount = totalCount,
+                Page = page,
+                PageSize = pageSize
+            };
         }
 
         public async Task<PatientDto?> GetByIdAsync(int id)
@@ -75,7 +88,12 @@ namespace ClinicManagerAPI.Services
         {
             if (string.IsNullOrWhiteSpace(query))
             {
-                return await GetAllAsync();
+                var all = await _context.Patients
+                    .OrderBy(p => p.LastName)
+                    .ThenBy(p => p.FirstName)
+                    .ToListAsync();
+
+                return _mapper.ToListDtos(all);
             }
 
             var normalizedQuery = query.Trim().ToLower();
