@@ -1,4 +1,5 @@
 using ClinicManagerAPI.Data;
+using ClinicManagerAPI.DTOs;
 using ClinicManagerAPI.DTOs.Visits;
 using ClinicManagerAPI.Mappers;
 using ClinicManagerAPI.Models;
@@ -10,26 +11,75 @@ namespace ClinicManagerAPI.Services
     {
         private readonly ApplicationDbContext _context;
         private readonly VisitMapper _mapper;
+        private readonly PatientMapper _patientMapper;
+        private readonly ClinicalNoteMapper _clinicalNoteMapper;
+        private readonly ProcedureMapper _procedureMapper;
+        private readonly PrescribedMedicationMapper _prescribedMedicationMapper;
 
-        public VisitService(ApplicationDbContext context, VisitMapper mapper)
+        public VisitService(
+            ApplicationDbContext context,
+            VisitMapper mapper,
+            PatientMapper patientMapper,
+            ClinicalNoteMapper clinicalNoteMapper,
+            ProcedureMapper procedureMapper,
+            PrescribedMedicationMapper prescribedMedicationMapper)
         {
             _context = context;
             _mapper = mapper;
+            _patientMapper = patientMapper;
+            _clinicalNoteMapper = clinicalNoteMapper;
+            _procedureMapper = procedureMapper;
+            _prescribedMedicationMapper = prescribedMedicationMapper;
         }
 
-        public async Task<IReadOnlyList<VisitListDto>> GetAllAsync()
+        public async Task<PagedResult<VisitListDto>> GetPagedAsync(
+            int page = 1,
+            int pageSize = 10,
+            DateTime? date = null,
+            VisitStatus? status = null,
+            string? doctorId = null)
         {
-            var visits = await QueryWithDoctor()
-                .OrderByDescending(v => v.Date)
+            var query = QueryWithDoctor();
+
+            if (date.HasValue)
+            {
+                var dayStart = date.Value.Date;
+                var dayEnd = dayStart.AddDays(1);
+                query = query.Where(v => v.Date >= dayStart && v.Date < dayEnd);
+            }
+
+            if (status.HasValue)
+            {
+                query = query.Where(v => v.Status == status.Value);
+            }
+
+            if (!string.IsNullOrWhiteSpace(doctorId))
+            {
+                query = query.Where(v => v.AssignedDoctorId == doctorId);
+            }
+
+            query = query.OrderByDescending(v => v.Date);
+
+            var totalCount = await query.CountAsync();
+
+            var visits = await query
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
                 .ToListAsync();
 
-            return _mapper.ToListDtos(visits);
+            return new PagedResult<VisitListDto>
+            {
+                Items = _mapper.ToListDtos(visits),
+                TotalCount = totalCount,
+                Page = page,
+                PageSize = pageSize
+            };
         }
 
-        public async Task<VisitDto?> GetByIdAsync(int id)
+        public async Task<VisitDetailDto?> GetByIdAsync(int id)
         {
-            var visit = await QueryWithDoctor().FirstOrDefaultAsync(v => v.Id == id);
-            return visit is null ? null : _mapper.ToDto(visit);
+            var visit = await QueryWithDetails().FirstOrDefaultAsync(v => v.Id == id);
+            return visit is null ? null : ToDetailDto(visit);
         }
 
         public async Task<IReadOnlyList<VisitListDto>> GetByPatientIdAsync(int patientId)
@@ -101,6 +151,40 @@ namespace ClinicManagerAPI.Services
             return _mapper.ToDto(visit);
         }
 
+        public async Task<VisitDto> AssignDoctorAsync(int id, string doctorId)
+        {
+            if (string.IsNullOrWhiteSpace(doctorId))
+            {
+                throw new ArgumentException("Identyfikator lekarza jest wymagany.", nameof(doctorId));
+            }
+
+            var visit = await _context.Visits.FindAsync(id)
+                ?? throw new KeyNotFoundException($"Wizyta o id {id} nie została znaleziona.");
+
+            await EnsureDoctorExistsAsync(doctorId);
+
+            visit.AssignedDoctorId = doctorId;
+            await _context.SaveChangesAsync();
+
+            await _context.Entry(visit).Reference(v => v.AssignedDoctor).LoadAsync();
+            return _mapper.ToDto(visit);
+        }
+
+        public async Task DeleteAsync(int id)
+        {
+            var visit = await _context.Visits.FindAsync(id)
+                ?? throw new KeyNotFoundException($"Wizyta o id {id} nie została znaleziona.");
+
+            if (visit.Status != VisitStatus.Zaplanowana)
+            {
+                throw new InvalidOperationException(
+                    "Można usunąć tylko wizytę ze statusem Zaplanowana.");
+            }
+
+            _context.Visits.Remove(visit);
+            await _context.SaveChangesAsync();
+        }
+
         public async Task<IReadOnlyList<VisitListDto>> GetTodayVisitsAsync()
         {
             var today = DateTime.Today;
@@ -116,6 +200,39 @@ namespace ClinicManagerAPI.Services
 
         private IQueryable<Visit> QueryWithDoctor() =>
             _context.Visits.Include(v => v.AssignedDoctor);
+
+        private IQueryable<Visit> QueryWithDetails() =>
+            _context.Visits
+                .Include(v => v.AssignedDoctor)
+                .Include(v => v.Patient)
+                .Include(v => v.ClinicalNotes)
+                .Include(v => v.ProceduresPerformed)
+                    .ThenInclude(p => p.PrescribedMedications)
+                        .ThenInclude(pm => pm.Medication);
+
+        private VisitDetailDto ToDetailDto(Visit visit)
+        {
+            var baseDto = _mapper.ToDto(visit);
+            var procedures = _procedureMapper.ToDtos(visit.ProceduresPerformed);
+            for (var i = 0; i < visit.ProceduresPerformed.Count; i++)
+            {
+                procedures[i].PrescribedMedications = _prescribedMedicationMapper.ToDtos(
+                    visit.ProceduresPerformed[i].PrescribedMedications);
+            }
+
+            return new VisitDetailDto
+            {
+                Id = baseDto.Id,
+                Date = baseDto.Date,
+                Status = baseDto.Status,
+                AssignedDoctorId = baseDto.AssignedDoctorId,
+                AssignedDoctorName = baseDto.AssignedDoctorName,
+                PatientId = baseDto.PatientId,
+                Patient = _patientMapper.ToDto(visit.Patient!),
+                Procedures = procedures,
+                ClinicalNotes = _clinicalNoteMapper.ToDtos(visit.ClinicalNotes)
+            };
+        }
 
         private async Task EnsurePatientExistsAsync(int patientId)
         {
