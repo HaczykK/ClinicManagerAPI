@@ -12,5 +12,11 @@ namespace ClinicManagerAPI.DTOs.MedicalRecords
 
         [Required]
         public int PatientId { get; set; }
+
+        public string? Description { get; set; }
+
+        public string? FileName { get; set; }
+
+        public DateTime UploadedAt { get; set; }
     }
 }

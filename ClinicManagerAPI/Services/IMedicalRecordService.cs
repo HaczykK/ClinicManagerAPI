@@ -6,7 +6,7 @@ namespace ClinicManagerAPI.Services
     {
         Task<IReadOnlyList<MedicalRecordDto>> GetByPatientIdAsync(int patientId);
         Task<MedicalRecordDto?> GetByIdAsync(int id);
-        Task<MedicalRecordDto> CreateAsync(CreateMedicalRecordDto dto);
+        Task<MedicalRecordDto> CreateAsync(int patientId, IFormFile file, string? description);
         Task DeleteAsync(int id);
     }
 }
