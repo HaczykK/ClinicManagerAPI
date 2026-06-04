@@ -16,9 +16,17 @@ namespace ClinicManagerAPI.Services
             _mapper = mapper;
         }
 
-        public async Task<IReadOnlyList<MedicationDto>> GetAllAsync()
+        public async Task<IReadOnlyList<MedicationDto>> GetAllAsync(string? name = null)
         {
-            var medications = await _context.Medications
+            var query = _context.Medications.AsQueryable();
+
+            if (!string.IsNullOrWhiteSpace(name))
+            {
+                var normalized = name.Trim().ToLower();
+                query = query.Where(m => m.Name.ToLower().Contains(normalized));
+            }
+
+            var medications = await query
                 .OrderBy(m => m.Name)
                 .ToListAsync();
 

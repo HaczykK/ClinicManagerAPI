@@ -9,5 +9,6 @@ namespace ClinicManagerAPI.Services
         Task<ProcedurePerformedDto> CreateAsync(CreateProcedurePerformedDto dto);
         Task DeleteAsync(int id);
         Task<PrescribedMedicationDto> AddMedicationAsync(int procedureId, CreatePrescribedMedicationDto dto);
+        Task DeletePrescribedMedicationAsync(int id);
     }
 }

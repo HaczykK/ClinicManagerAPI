@@ -80,6 +80,15 @@ namespace ClinicManagerAPI.Services
             return _prescribedMedicationMapper.ToDto(prescribedMedication);
         }
 
+        public async Task DeletePrescribedMedicationAsync(int id)
+        {
+            var prescribedMedication = await _context.PrescribedMedications.FindAsync(id)
+                ?? throw new KeyNotFoundException($"Przepisany lek o id {id} nie został znaleziony.");
+
+            _context.PrescribedMedications.Remove(prescribedMedication);
+            await _context.SaveChangesAsync();
+        }
+
         private async Task EnsureVisitExistsAsync(int visitId)
         {
             if (!await _context.Visits.AnyAsync(v => v.Id == visitId))
