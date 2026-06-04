@@ -4,7 +4,6 @@ namespace ClinicManagerAPI.DTOs.ClinicalNotes
 {
     public class CreateClinicalNoteDto
     {
-        [Required(ErrorMessage = "Autor notatki jest wymagany.")]
         [MaxLength(200)]
         public string Author { get; set; } = string.Empty;
 

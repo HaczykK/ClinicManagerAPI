@@ -17,6 +17,7 @@ namespace ClinicManagerAPI.Mappers
         public partial ClinicalNote ToEntity(CreateClinicalNoteDto dto);
 
         [MapperIgnoreTarget(nameof(ClinicalNote.Id))]
+        [MapperIgnoreTarget(nameof(ClinicalNote.Author))]
         [MapperIgnoreTarget(nameof(ClinicalNote.Timestamp))]
         [MapperIgnoreTarget(nameof(ClinicalNote.VisitId))]
         [MapperIgnoreTarget(nameof(ClinicalNote.Visit))]

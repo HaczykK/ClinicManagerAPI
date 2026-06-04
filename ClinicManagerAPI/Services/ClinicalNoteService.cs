@@ -28,6 +28,12 @@ namespace ClinicManagerAPI.Services
             return _mapper.ToDtos(notes);
         }
 
+        public async Task<ClinicalNoteDto?> GetByIdAsync(int id)
+        {
+            var note = await _context.ClinicalNotes.FindAsync(id);
+            return note is null ? null : _mapper.ToDto(note);
+        }
+
         public async Task<ClinicalNoteDto> CreateAsync(CreateClinicalNoteDto dto)
         {
             await EnsureVisitExistsAsync(dto.VisitId);
