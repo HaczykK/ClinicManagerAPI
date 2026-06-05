@@ -77,7 +77,7 @@ builder.Services.AddOpenApi();
 
 var app = builder.Build();
 
-// Seed ról przy starcie aplikacji
+// Seed ról i danych testowych przy starcie aplikacji
 using (var scope = app.Services.CreateScope())
 {
     var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
@@ -90,6 +90,8 @@ using (var scope = app.Services.CreateScope())
             await roleManager.CreateAsync(new IdentityRole(role));
         }
     }
+
+    await DataSeeder.SeedAsync(scope.ServiceProvider);
 }
 
 // Configure the HTTP request pipeline.
