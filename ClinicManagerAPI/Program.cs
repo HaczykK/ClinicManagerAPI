@@ -1,15 +1,20 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.OpenApi;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using NLog;
 using NLog.Web;
+using QuestPDF.Infrastructure;
 using ClinicManagerAPI.Data;
 using ClinicManagerAPI.Mappers;
 using ClinicManagerAPI.Middleware;
 using ClinicManagerAPI.Models;
 using ClinicManagerAPI.Services;
+
+// Konfiguracja licencji QuestPDF (Community)
+QuestPDF.Settings.License = LicenseType.Community;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -78,9 +83,39 @@ builder.Services.AddScoped<IMedicationService, MedicationService>();
 builder.Services.AddScoped<IMedicalRecordService, MedicalRecordService>();
 builder.Services.AddScoped<IClinicalNoteService, ClinicalNoteService>();
 builder.Services.AddScoped<IProcedureService, ProcedureService>();
+builder.Services.AddScoped<IPdfService, PdfService>();
 
 builder.Services.AddControllers();
-builder.Services.AddOpenApi();
+
+// Konfiguracja Swagger z obsługą JWT
+builder.Services.AddSwaggerGen(options =>
+{
+    options.SwaggerDoc("v1", new OpenApiInfo
+    {
+        Title = "ClinicManagerAPI",
+        Version = "v1",
+        Description = "API systemu zarządzania przychodnią lekarską"
+    });
+
+    // Definicja schematu Bearer do autoryzacji JWT
+    options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+    {
+        Name = "Authorization",
+        Type = SecuritySchemeType.Http,
+        Scheme = "Bearer",
+        BearerFormat = "JWT",
+        In = ParameterLocation.Header,
+        Description = "Wprowadź token JWT w formacie: {token}"
+    });
+
+    options.AddSecurityRequirement(document =>
+    {
+        var requirement = new OpenApiSecurityRequirement();
+        var schemeReference = new OpenApiSecuritySchemeReference("Bearer", document);
+        requirement.Add(schemeReference, new List<string>());
+        return requirement;
+    });
+});
 
 var app = builder.Build();
 
@@ -107,7 +142,8 @@ app.UseMiddleware<ExceptionHandlingMiddleware>();
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
-    app.MapOpenApi();
+    app.UseSwagger();
+    app.UseSwaggerUI();
 }
 
 app.UseHttpsRedirection();
