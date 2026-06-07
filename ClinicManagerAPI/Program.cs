@@ -3,12 +3,19 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
+using NLog;
+using NLog.Web;
 using ClinicManagerAPI.Data;
 using ClinicManagerAPI.Mappers;
+using ClinicManagerAPI.Middleware;
 using ClinicManagerAPI.Models;
 using ClinicManagerAPI.Services;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// Konfiguracja NLog
+builder.Logging.ClearProviders();
+builder.Host.UseNLog();
 
 // Add services to the container.
 
@@ -93,6 +100,9 @@ using (var scope = app.Services.CreateScope())
 
     await DataSeeder.SeedAsync(scope.ServiceProvider);
 }
+
+// Globalny middleware do obsługi wyjątków (musi być pierwszy w pipeline)
+app.UseMiddleware<ExceptionHandlingMiddleware>();
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
