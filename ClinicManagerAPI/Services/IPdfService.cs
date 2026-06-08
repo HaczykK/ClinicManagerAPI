@@ -21,4 +21,9 @@ public interface IPdfService
     /// Generuje raport kosztów świadczeń z opcjonalnym filtrowaniem.
     /// </summary>
     Task<byte[]> GenerateCostReportPdf(CostReportFilter filter);
+
+    /// <summary>
+    /// Generuje raport PDF z wizytami zaplanowanymi na podany dzień.
+    /// </summary>
+    Task<byte[]> GenerateUpcomingVisitsPdf(DateTime date);
 }

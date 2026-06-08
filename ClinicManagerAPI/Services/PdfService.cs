@@ -500,6 +500,107 @@ public class PdfService : IPdfService
     }
 
     // ───────────────────────────────────────────────────────
+    // Raport nadchodzących wizyt
+    // ───────────────────────────────────────────────────────
+    public async Task<byte[]> GenerateUpcomingVisitsPdf(DateTime date)
+    {
+        var dayStart = date.Date;
+        var dayEnd = dayStart.AddDays(1);
+
+        var visits = await _context.Visits
+            .Include(v => v.Patient)
+            .Include(v => v.AssignedDoctor)
+            .Where(v => v.Status == VisitStatus.Zaplanowana)
+            .Where(v => v.Date >= dayStart && v.Date < dayEnd)
+            .OrderBy(v => v.Date)
+            .ToListAsync();
+
+        var document = Document.Create(container =>
+        {
+            container.Page(page =>
+            {
+                page.Size(PageSizes.A4.Landscape());
+                page.MarginHorizontal(35);
+                page.MarginVertical(30);
+                page.DefaultTextStyle(x => x.FontSize(9).FontColor(Colors.Grey.Darken3));
+
+                page.Header().Element(c => ComposeHeader(c, "Raport nadchodzących wizyt"));
+
+                page.Content().Element(content =>
+                {
+                    content.PaddingVertical(8).Column(column =>
+                    {
+                        column.Spacing(10);
+
+                        column.Item().Background(LightBgHex).Padding(10).Row(row =>
+                        {
+                            row.RelativeItem().Text(t =>
+                            {
+                                t.Span("Data raportu: ").Bold();
+                                t.Span(dayStart.ToString("dd.MM.yyyy"));
+                            });
+                            row.RelativeItem().Text(t =>
+                            {
+                                t.Span("Liczba wizyt: ").Bold();
+                                t.Span(visits.Count.ToString());
+                            });
+                        });
+
+                        if (visits.Count == 0)
+                        {
+                            column.Item().PaddingVertical(20).AlignCenter()
+                                .Text("Brak zaplanowanych wizyt na ten dzień.")
+                                .FontSize(12).Italic().FontColor(Colors.Grey.Medium);
+                        }
+                        else
+                        {
+                            column.Item().Table(table =>
+                            {
+                                table.ColumnsDefinition(cols =>
+                                {
+                                    cols.ConstantColumn(30);
+                                    cols.RelativeColumn(1);
+                                    cols.RelativeColumn(2);
+                                    cols.RelativeColumn(2);
+                                    cols.RelativeColumn(1);
+                                });
+
+                                table.Header(header =>
+                                {
+                                    ComposeTableHeaderCell(header.Cell(), "Lp.");
+                                    ComposeTableHeaderCell(header.Cell(), "Godzina");
+                                    ComposeTableHeaderCell(header.Cell(), "Pacjent");
+                                    ComposeTableHeaderCell(header.Cell(), "Lekarz");
+                                    ComposeTableHeaderCell(header.Cell(), "Status");
+                                });
+
+                                int idx = 1;
+                                foreach (var v in visits)
+                                {
+                                    ComposeTableCell(table.Cell(), idx.ToString());
+                                    ComposeTableCell(table.Cell(), v.Date.ToString("HH:mm"));
+                                    ComposeTableCell(table.Cell(), v.Patient != null
+                                        ? $"{v.Patient.FirstName} {v.Patient.LastName}"
+                                        : "—");
+                                    ComposeTableCell(table.Cell(), v.AssignedDoctor != null
+                                        ? $"{v.AssignedDoctor.FirstName} {v.AssignedDoctor.LastName}"
+                                        : "—");
+                                    ComposeTableCell(table.Cell(), v.Status.ToString());
+                                    idx++;
+                                }
+                            });
+                        }
+                    });
+                });
+
+                page.Footer().Element(c => ComposeFooter(c));
+            });
+        });
+
+        return document.GeneratePdf();
+    }
+
+    // ───────────────────────────────────────────────────────
     // Wspólne elementy layoutu
     // ───────────────────────────────────────────────────────
 

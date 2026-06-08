@@ -7,6 +7,7 @@ using System.Text;
 using NLog;
 using NLog.Web;
 using QuestPDF.Infrastructure;
+using ClinicManagerAPI.Configuration;
 using ClinicManagerAPI.Data;
 using ClinicManagerAPI.Mappers;
 using ClinicManagerAPI.Middleware;
@@ -84,6 +85,11 @@ builder.Services.AddScoped<IMedicalRecordService, MedicalRecordService>();
 builder.Services.AddScoped<IClinicalNoteService, ClinicalNoteService>();
 builder.Services.AddScoped<IProcedureService, ProcedureService>();
 builder.Services.AddScoped<IPdfService, PdfService>();
+
+builder.Services.Configure<SmtpSettings>(
+    builder.Configuration.GetSection("SmtpSettings"));
+builder.Services.AddScoped<IEmailService, EmailService>();
+builder.Services.AddHostedService<UpcomingVisitsReportBackgroundService>();
 
 builder.Services.AddControllers();
 
