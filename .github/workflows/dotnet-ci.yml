@@ -1,0 +1,41 @@
+name: dotnet-ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET 10 SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Restore dependencies
+        run: dotnet restore ClinicManagerAPI.slnx
+
+      - name: Build
+        run: dotnet build ClinicManagerAPI.slnx --no-restore --configuration Release
+
+      - name: Test
+        if: hashFiles('**/*Tests.csproj', '**/*Test.csproj') != ''
+        run: dotnet test ClinicManagerAPI.slnx --no-build --configuration Release --verbosity normal
+
+  docker-build:
+    runs-on: ubuntu-latest
+    needs: build-and-test
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Build Docker image
+        run: docker build -t clinic-manager-api:latest .

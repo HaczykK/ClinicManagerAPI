@@ -1,7 +1,5 @@
-# 🏥 Projekt zaliczeniowy – ASP.NET Core
+# 🏥 Projekt zaliczeniowy – ASP.NET Core  
 ## **System zarządzania przychodnią medyczną 2.0**
-
-[![Build Status](https://github.com/HaczykK/ClinicManagerAPI/actions/workflows/dotnet-ci.yml/badge.svg)](https://github.com/HaczykK/ClinicManagerAPI/actions/workflows/dotnet-ci.yml)
 
 ---
 
@@ -22,38 +20,8 @@ Projekt powinien mieć przejrzystą strukturę, modularność, oraz używać now
 ---
 
 ## 🧑‍🤝‍🧑 Zespół
-
 - Zespół: **2 osoby**
 - Praca nad repozytorium GitHub (wymagana historia commitów)
-
----
-
-## 🚀 **Uruchomienie lokalne**
-
-### Wymagania
-
-- [.NET 10 SDK](https://dotnet.microsoft.com/download)
-- SQL Server (lokalnie: LocalDB)
-
-### Kroki
-
-```bash
-dotnet restore ClinicManagerAPI.slnx
-dotnet build ClinicManagerAPI.slnx
-dotnet run --project ClinicManagerAPI/ClinicManagerAPI.csproj
-```
-
-Aplikacja startuje pod adresem: `http://localhost:5214`
-
-### Konta testowe (seed)
-
-| Rola | E-mail | Hasło |
-|------|--------|-------|
-| Admin | `admin@clinic.pl` | `Admin123!` |
-| Lekarz | `lekarz@clinic.pl` | `Lekarz123!` |
-| Rejestratorka | `rejestratorka@clinic.pl` | `Rejestratorka123!` |
-
-Role: `Admin`, `Lekarz`, `Rejestratorka` — tworzone automatycznie przy starcie aplikacji.
 
 ---
 
@@ -103,27 +71,15 @@ Role: `Admin`, `Lekarz`, `Rejestratorka` — tworzone automatycznie przy starcie
 
 ### ⚙️ **3. GitHub Actions – CI/CD**
 
-Workflow [`.github/workflows/dotnet-ci.yml`](.github/workflows/dotnet-ci.yml) uruchamia się automatycznie przy **push** i **pull request** do brancha `main`.
+#### 📌 Zadanie:
+- Skonfiguruj workflow z następującymi krokami:
+  - build (`dotnet build`)
+  - test (`dotnet test`)
+  - opcjonalnie: build obrazu Docker
+  - opcjonalnie: push do DockerHub (wymaga tokenu)
 
-#### Job `build-and-test`
-
-| Krok | Opis |
-|------|------|
-| Checkout | Pobranie kodu z repozytorium |
-| Setup .NET 10 SDK | Instalacja SDK `10.0.x` na `ubuntu-latest` |
-| Restore | `dotnet restore ClinicManagerAPI.slnx` |
-| Build | `dotnet build ClinicManagerAPI.slnx --no-restore --configuration Release` |
-| Test | `dotnet test` — uruchamiany tylko gdy istnieje projekt testowy (`*Tests.csproj` / `*Test.csproj`) |
-
-#### Job `docker-build`
-
-Po pomyślnym buildzie uruchamiany jest build obrazu Docker:
-
-```bash
-docker build -t clinic-manager-api:latest .
-```
-
-Status builda widoczny jest w badge na górze tego pliku oraz w zakładce **Actions** na GitHubie.
+#### 📎 Plik: `README.md` → opis działania CI/CD  
+#### 📎 Plik: `dotnet-ci.yml` w repozytorium
 
 ---
 
@@ -145,7 +101,7 @@ Status builda widoczny jest w badge na górze tego pliku oraz w zakładce **Acti
   - zapisuje go jako PDF (np. `upcoming_visits.pdf`)
   - wysyła jako załącznik na e-mail administratora przychodni (np. za pomocą SMTP)
 
-#### 📎 Plik: `raport-nadchodzace-wizyty.pdf`
+#### 📎 Plik: `raport-nadchodzace-wizyty.pdf`  
 #### 📎 Klasa: `UpcomingVisitsReportBackgroundService.cs`
 
 ---
@@ -159,31 +115,9 @@ Status builda widoczny jest w badge na górze tego pliku oraz w zakładce **Acti
 - Uruchom test z 50 równoległymi użytkownikami, 100 żądaniami.
 - Zapisz **raport PDF z wynikami testu** (czas odpowiedzi, throughput, błędy).
 
-#### 📎 Plik: `nbomber-report.pdf`
-#### 📎 Kod testu: np. `PerformanceTests/VisitsLoadTest.cs`
+#### 📎 Plik: `nbomber-report.pdf`  
+#### 📎 Kod testu: np. `PerformanceTests/VisitsLoadTest.cs`  
 #### 📎 Kod endpointu: np. `Controllers/VisitsController.cs`
-
----
-
-## 🐳 **Docker**
-
-### Build obrazu
-
-```bash
-docker build -t clinic-manager-api:latest .
-```
-
-### Uruchomienie kontenera
-
-```bash
-docker run -d -p 8080:8080 \
-  -e ConnectionStrings__DefaultConnection="Server=host.docker.internal;Database=ClinicManagerDB;User Id=sa;Password=YourPassword;TrustServerCertificate=True" \
-  --name clinic-manager-api clinic-manager-api:latest
-```
-
-API dostępne pod adresem: `http://localhost:8080`
-
-> W środowisku produkcyjnym nadpisz connection string, klucz JWT i ustawienia SMTP zmiennymi środowiskowymi lub plikiem `appsettings.Production.json`.
 
 ---
 
@@ -215,34 +149,24 @@ class ClinicalNote { Author, Content, Timestamp }
 | **PDF**                 | Generowanie raportów jako PDF                                             |
 | **Frontend**            | Razor Pages + Bootstrap (opcjonalnie SPA: React/Blazor/Angular)           |
 | **Testy**               | testy jednostkowe (xUnit/NUnit)                                           |
-| **CI/CD**               | GitHub Actions — build, test, Docker build                                |
 
 ---
 
 ## 🗂️ **Struktura projektu**
 
 ```
-/ClinicManagerAPI
-├── .github/
-│   └── workflows/
-│       └── dotnet-ci.yml    // pipeline CI/CD
-├── ClinicManagerAPI/
-│   ├── Controllers/
-│   ├── DTOs/
-│   ├── Models/
-│   ├── Services/
-│   ├── Mappers/             // Mapperly mappery
-│   ├── Views/
-│   ├── wwwroot/
-│   │   └── uploads/         // skany dokumentów medycznych
-│   ├── Data/
-│   └── Program.cs
-├── Dockerfile
-├── ClinicManagerAPI.slnx
-└── README.md
+/ClinicManager
+├── Controllers/
+├── DTOs/
+├── Models/
+├── Services/
+├── Mappers/             // Mapperly mappery
+├── Views/
+├── wwwroot/
+│   └── uploads/         // skany dokumentów medycznych
+├── Data/
+├── Program.cs
 ```
-
----
 
 ## ✅ Co należy oddać?
 
