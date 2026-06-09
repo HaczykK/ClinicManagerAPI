@@ -1,0 +1,30 @@
+=== ZAPYTANIE 1: Wyszukiwanie po PESEL ===
+SQL: SELECT Id, FirstName, LastName, Pesel FROM Patients WHERE Pesel = '85010112345' AND IsDeleted = 0;
+
+PRZED migracją:
+  Operacja: Clustered Index Scan (PK_Patients)
+  Logical reads: 3
+
+PO migracji:
+  Operacja: Index Seek (IX_Patients_Pesel) + Clustered Index Seek (Key Lookup)
+  Logical reads: 4
+
+Wniosek: Optymalizator przeszedł z pełnego skanowania tabeli na precyzyjne wyszukiwanie w indeksie PESEL.
+
+=== ZAPYTANIE 2: Wizyty na dany dzień ===
+SQL: SELECT ... FROM Visits WHERE Date >= @dayStart AND Date < @dayEnd;
+
+PRZED migracją:
+  Operacja: Clustered Index Scan (PK_Visits)
+  Logical reads: 3
+
+PO migracji:
+  Operacja: Clustered Index Scan (PK_Visits)
+  Logical reads: 3
+
+Wniosek: Przy małej tabeli (8 wierszy) SQL Server nadal wybiera Scan jako tańszy plan.
+Indeks IX_Visits_Date został utworzony i będzie używany (Index Seek) przy większej liczbie rekordów.
+
+=== UTWORZONE INDEKSY ===
+Patients: IX_Patients_Pesel (UNIQUE), IX_Patients_LastName
+Visits: IX_Visits_Date, IX_Visits_Status (+ istniejące IX_Visits_AssignedDoctorId, IX_Visits_PatientId)

@@ -1,0 +1,6 @@
+﻿SET STATISTICS IO ON;
+SET STATISTICS PROFILE ON;
+
+SELECT Id, FirstName, LastName, Pesel
+FROM Patients
+WHERE Pesel = '44051401359' AND IsDeleted = 0;

@@ -49,6 +49,12 @@ namespace ClinicManagerAPI.Data
                 .WithMany()
                 .HasForeignKey(v => v.AssignedDoctorId)
                 .OnDelete(DeleteBehavior.SetNull);
+
+            modelBuilder.Entity<Patient>().HasIndex(p => p.Pesel).IsUnique();
+            modelBuilder.Entity<Patient>().HasIndex(p => p.LastName);
+            modelBuilder.Entity<Visit>().HasIndex(v => v.Date);
+            modelBuilder.Entity<Visit>().HasIndex(v => v.AssignedDoctorId);
+            modelBuilder.Entity<Visit>().HasIndex(v => v.Status);
         }
     }
 }
