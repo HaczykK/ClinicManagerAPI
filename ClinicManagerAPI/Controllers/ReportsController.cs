@@ -6,9 +6,7 @@ using ClinicManagerAPI.Services;
 namespace ClinicManagerAPI.Controllers;
 
 [Route("api/reports")]
-[ApiController]
-[Authorize]
-public class ReportsController : ControllerBase
+public class ReportsController : JwtApiControllerBase
 {
     private readonly IPdfService _pdfService;
 

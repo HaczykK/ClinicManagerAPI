@@ -8,9 +8,7 @@ using ClinicManagerAPI.Services;
 namespace ClinicManagerAPI.Controllers
 {
     [Route("api/[controller]")]
-    [ApiController]
-    [Authorize]
-    public class PatientsController : ControllerBase
+    public class PatientsController : JwtApiControllerBase
     {
         private readonly IPatientService _patientService;
         private readonly IVisitService _visitService;

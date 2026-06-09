@@ -1,0 +1,86 @@
+@page
+@model ClinicManagerAPI.Pages.IndexModel
+@{
+    ViewData["Title"] = "Strona główna";
+}
+
+<div class="page-header">
+    <h1 class="h2">Panel główny</h1>
+    <p class="text-muted">Przegląd przychodni</p>
+</div>
+
+<div class="row g-3 mb-4">
+    <div class="col-md-4">
+        <div class="card dashboard-card border-0 shadow-sm">
+            <div class="card-body">
+                <h2 class="h6 text-muted text-uppercase">Pacjenci</h2>
+                <p class="display-6 mb-0">@Model.PatientCount</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card dashboard-card border-0 shadow-sm">
+            <div class="card-body">
+                <h2 class="h6 text-muted text-uppercase">Wizyty na dziś</h2>
+                <p class="display-6 mb-0">@Model.TodayVisitCount</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card dashboard-card border-0 shadow-sm">
+            <div class="card-body">
+                <h2 class="h6 text-muted text-uppercase">Szybki dostęp</h2>
+                <div class="d-flex gap-2 flex-wrap">
+                    <a asp-page="/Patients/Index" class="btn btn-outline-primary btn-sm">Pacjenci</a>
+                    <a asp-page="/Visits/Index" class="btn btn-outline-primary btn-sm">Wizyty</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card shadow-sm">
+    <div class="card-header bg-white">
+        <h2 class="h5 mb-0">Ostatnie wizyty</h2>
+    </div>
+    <div class="card-body p-0">
+        @if (Model.RecentVisits.Count == 0)
+        {
+            <p class="text-muted p-3 mb-0">Brak wizyt do wyświetlenia.</p>
+        }
+        else
+        {
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Data</th>
+                            <th>Pacjent</th>
+                            <th>Lekarz</th>
+                            <th>Status</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var visit in Model.RecentVisits)
+                        {
+                            <tr>
+                                <td>@visit.Date.ToString("dd.MM.yyyy HH:mm")</td>
+                                <td>@(visit.PatientName ?? $"Pacjent #{visit.PatientId}")</td>
+                                <td>@(visit.AssignedDoctorName ?? "—")</td>
+                                <td>
+                                    <span class="badge @DisplayHelpers.StatusBadgeClass(visit.Status)">
+                                        @DisplayHelpers.FormatVisitStatus(visit.Status)
+                                    </span>
+                                </td>
+                                <td class="table-actions">
+                                    <a asp-page="/Visits/Details" asp-route-id="@visit.Id" class="btn btn-sm btn-outline-secondary">Szczegóły</a>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+    </div>
+</div>

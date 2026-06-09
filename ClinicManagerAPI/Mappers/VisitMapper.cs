@@ -11,6 +11,7 @@ namespace ClinicManagerAPI.Mappers
         public partial VisitDto ToDto(Visit visit);
 
         [MapPropertyFromSource(nameof(VisitListDto.AssignedDoctorName), Use = nameof(MapDoctorName))]
+        [MapPropertyFromSource(nameof(VisitListDto.PatientName), Use = nameof(MapPatientName))]
         public partial VisitListDto ToListDto(Visit visit);
 
         public partial List<VisitListDto> ToListDtos(List<Visit> visits);
@@ -33,5 +34,10 @@ namespace ClinicManagerAPI.Mappers
             visit.AssignedDoctor is null
                 ? null
                 : $"{visit.AssignedDoctor.FirstName} {visit.AssignedDoctor.LastName}".Trim();
+
+        private static string? MapPatientName(Visit visit) =>
+            visit.Patient is null
+                ? null
+                : $"{visit.Patient.FirstName} {visit.Patient.LastName}".Trim();
     }
 }

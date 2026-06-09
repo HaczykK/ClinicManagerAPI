@@ -20,5 +20,8 @@ namespace ClinicManagerAPI.DTOs.Visits
         public string? AssignedDoctorName { get; set; }
 
         public int PatientId { get; set; }
+
+        [MaxLength(200)]
+        public string? PatientName { get; set; }
     }
 }

@@ -1,0 +1,76 @@
+@page
+@model ClinicManagerAPI.Pages.Reports.IndexModel
+@{
+    ViewData["Title"] = "Raporty";
+}
+
+<div class="page-header">
+    <h1 class="h2">Raporty</h1>
+    <p class="text-muted">Generowanie dokumentów PDF</p>
+</div>
+
+<div class="row g-4">
+    <div class="col-lg-6">
+        <div class="card shadow-sm h-100">
+            <div class="card-header bg-white">
+                <h2 class="h5 mb-0">Raport kosztów świadczeń</h2>
+            </div>
+            <div class="card-body">
+                <form method="get" asp-page-handler="DownloadCostReport">
+                    <div class="mb-3">
+                        <label class="form-label">Pacjent</label>
+                        <select name="Filter.PatientId" class="form-select">
+                            <option value="">Wszyscy pacjenci</option>
+                            @foreach (var patient in Model.Patients)
+                            {
+                                <option value="@patient.Id" selected="@(Model.Filter.PatientId == patient.Id)">
+                                    @patient.FirstName @patient.LastName
+                                </option>
+                            }
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Lekarz</label>
+                        <select name="Filter.DoctorId" class="form-select">
+                            <option value="">Wszyscy lekarze</option>
+                            @foreach (var doctor in Model.Doctors)
+                            {
+                                <option value="@doctor.Id" selected="@(Model.Filter.DoctorId == doctor.Id)">
+                                    @doctor.FirstName @doctor.LastName
+                                </option>
+                            }
+                        </select>
+                    </div>
+                    <div class="row g-2 mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Data od</label>
+                            <input type="date" name="Filter.DateFrom" value="@Model.Filter.DateFrom?.ToString("yyyy-MM-dd")" class="form-control" />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Data do</label>
+                            <input type="date" name="Filter.DateTo" value="@Model.Filter.DateTo?.ToString("yyyy-MM-dd")" class="form-control" />
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Pobierz raport kosztów (PDF)</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-6">
+        <div class="card shadow-sm h-100">
+            <div class="card-header bg-white">
+                <h2 class="h5 mb-0">Wizyty zaplanowane na dzień</h2>
+            </div>
+            <div class="card-body">
+                <form method="get" asp-page-handler="DownloadUpcomingVisits">
+                    <div class="mb-3">
+                        <label class="form-label">Data</label>
+                        <input type="date" name="upcomingVisitsDate" value="@Model.UpcomingVisitsDate?.ToString("yyyy-MM-dd")" class="form-control" required />
+                    </div>
+                    <button type="submit" class="btn btn-primary">Pobierz listę wizyt (PDF)</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

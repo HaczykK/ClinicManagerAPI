@@ -211,7 +211,9 @@ namespace ClinicManagerAPI.Services
         }
 
         private IQueryable<Visit> QueryWithDoctor() =>
-            _context.Visits.Include(v => v.AssignedDoctor);
+            _context.Visits
+                .Include(v => v.AssignedDoctor)
+                .Include(v => v.Patient);
 
         private IQueryable<Visit> QueryWithDetails() =>
             _context.Visits

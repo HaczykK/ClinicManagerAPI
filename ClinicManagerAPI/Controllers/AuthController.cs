@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -146,7 +147,7 @@ namespace ClinicManagerAPI.Controllers
         }
 
         [HttpPost("assign-role")]
-        [Authorize(Roles = "Admin")]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
         public async Task<IActionResult> AssignRole([FromBody] AssignRoleDto model)
         {
             if (!ModelState.IsValid)
@@ -182,7 +183,7 @@ namespace ClinicManagerAPI.Controllers
         }
 
         [HttpPost("remove-role")]
-        [Authorize(Roles = "Admin")]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
         public async Task<IActionResult> RemoveRole([FromBody] AssignRoleDto model)
         {
             var user = await _userManager.FindByEmailAsync(model.Email);
@@ -207,7 +208,7 @@ namespace ClinicManagerAPI.Controllers
         }
 
         [HttpGet("roles")]
-        [Authorize(Roles = "Admin")]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
         public IActionResult GetRoles()
         {
             var roles = _roleManager.Roles.Select(r => r.Name).ToList();
@@ -215,7 +216,7 @@ namespace ClinicManagerAPI.Controllers
         }
 
         [HttpGet("me")]
-        [Authorize]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
         public async Task<ActionResult<AuthResponseDto>> GetCurrentUser()
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);

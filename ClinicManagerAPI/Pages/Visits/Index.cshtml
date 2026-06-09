@@ -1,0 +1,133 @@
+@page
+@model ClinicManagerAPI.Pages.Visits.IndexModel
+@{
+    ViewData["Title"] = "Wizyty";
+}
+
+<div class="page-header">
+    <h1 class="h2">Wizyty</h1>
+    <p class="text-muted">Lista wizyt z filtrowaniem</p>
+</div>
+
+<form method="get" class="card shadow-sm mb-4">
+    <div class="card-body">
+        <div class="row g-3 align-items-end">
+            <div class="col-md-3">
+                <label class="form-label">Data</label>
+                <input type="date" name="date" value="@(Model.Date?.ToString("yyyy-MM-dd"))" class="form-control" />
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">Status</label>
+                <select name="status" class="form-select">
+                    <option value="">Wszystkie</option>
+                    @foreach (VisitStatus status in Enum.GetValues<VisitStatus>())
+                    {
+                        if (Model.Status == status)
+                        {
+                            <option value="@status" selected>@DisplayHelpers.FormatVisitStatus(status)</option>
+                        }
+                        else
+                        {
+                            <option value="@status">@DisplayHelpers.FormatVisitStatus(status)</option>
+                        }
+                    }
+                </select>
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">Lekarz</label>
+                <select name="doctorId" class="form-select">
+                    <option value="">Wszyscy</option>
+                    @foreach (var doctor in Model.Doctors)
+                    {
+                        if (Model.DoctorId == doctor.Id)
+                        {
+                            <option value="@doctor.Id" selected>@doctor.FirstName @doctor.LastName</option>
+                        }
+                        else
+                        {
+                            <option value="@doctor.Id">@doctor.FirstName @doctor.LastName</option>
+                        }
+                    }
+                </select>
+            </div>
+            <div class="col-md-2 d-flex gap-2">
+                <button type="submit" class="btn btn-primary w-100">Filtruj</button>
+            </div>
+        </div>
+        <div class="mt-2">
+            <a asp-page="Index" class="btn btn-sm btn-outline-secondary">Wyczyść filtry</a>
+        </div>
+    </div>
+</form>
+
+<div class="card shadow-sm">
+    <div class="table-responsive">
+        <table class="table table-hover mb-0">
+            <thead class="table-light">
+                <tr>
+                    <th>Data</th>
+                    <th>Pacjent</th>
+                    <th>Lekarz</th>
+                    <th>Status</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (Model.Visits.Count == 0)
+                {
+                    <tr>
+                        <td colspan="5" class="text-muted text-center py-4">Brak wizyt spełniających kryteria.</td>
+                    </tr>
+                }
+                else
+                {
+                    @foreach (var visit in Model.Visits)
+                    {
+                        <tr>
+                            <td>@visit.Date.ToString("dd.MM.yyyy HH:mm")</td>
+                            <td>
+                                <a asp-page="/Patients/Details" asp-route-id="@visit.PatientId">
+                                    @(visit.PatientName ?? $"Pacjent #{visit.PatientId}")
+                                </a>
+                            </td>
+                            <td>@(visit.AssignedDoctorName ?? "—")</td>
+                            <td>
+                                <span class="badge @DisplayHelpers.StatusBadgeClass(visit.Status)">
+                                    @DisplayHelpers.FormatVisitStatus(visit.Status)
+                                </span>
+                            </td>
+                            <td class="table-actions text-end">
+                                <a asp-page="Details" asp-route-id="@visit.Id" class="btn btn-sm btn-outline-primary">Szczegóły</a>
+                            </td>
+                        </tr>
+                    }
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+@if (Model.TotalPages > 1)
+{
+    <nav class="mt-3">
+        <ul class="pagination justify-content-center">
+            <li class="page-item @(Model.PageNumber <= 1 ? "disabled" : "")">
+                <a class="page-link" asp-page="Index"
+                   asp-route-pageNumber="@(Model.PageNumber - 1)"
+                   asp-route-date="@Model.Date?.ToString("yyyy-MM-dd")"
+                   asp-route-status="@Model.Status"
+                   asp-route-doctorId="@Model.DoctorId">Poprzednia</a>
+            </li>
+            <li class="page-item disabled">
+                <span class="page-link">Strona @Model.PageNumber z @Model.TotalPages</span>
+            </li>
+            <li class="page-item @(Model.PageNumber >= Model.TotalPages ? "disabled" : "")">
+                <a class="page-link" asp-page="Index"
+                   asp-route-pageNumber="@(Model.PageNumber + 1)"
+                   asp-route-date="@Model.Date?.ToString("yyyy-MM-dd")"
+                   asp-route-status="@Model.Status"
+                   asp-route-doctorId="@Model.DoctorId">Następna</a>
+            </li>
+        </ul>
+    </nav>
+}

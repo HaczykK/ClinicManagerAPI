@@ -45,16 +45,19 @@ builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
 .AddEntityFrameworkStores<ApplicationDbContext>()
 .AddDefaultTokenProviders();
 
-// Konfiguracja JWT
+builder.Services.ConfigureApplicationCookie(options =>
+{
+    options.LoginPath = "/Auth/Login";
+    options.AccessDeniedPath = "/Auth/AccessDenied";
+    options.LogoutPath = "/Auth/Logout";
+});
+
+// Konfiguracja JWT (nazwany schemat dla API; domyślny schemat to cookie Identity)
 var jwtSettings = builder.Configuration.GetSection("JwtSettings");
 var secretKey = jwtSettings["SecretKey"] ?? "TymczasowyKluczDoZmianyWProdukcji123!@#";
 
-builder.Services.AddAuthentication(options =>
-{
-    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-})
-.AddJwtBearer(options =>
+builder.Services.AddAuthentication()
+.AddJwtBearer(JwtBearerDefaults.AuthenticationScheme, options =>
 {
     options.TokenValidationParameters = new TokenValidationParameters
     {
@@ -68,7 +71,20 @@ builder.Services.AddAuthentication(options =>
     };
 });
 
-builder.Services.AddAuthorization();
+builder.Services.AddAuthorization(options =>
+{
+    options.AddPolicy("AdminOrRejestratorka", policy =>
+        policy.RequireRole("Admin", "Rejestratorka"));
+});
+
+builder.Services.AddRazorPages(options =>
+{
+    options.Conventions.AuthorizeFolder("/");
+    options.Conventions.AllowAnonymousToPage("/Auth/Login");
+    options.Conventions.AuthorizePage("/Patients/Create", "AdminOrRejestratorka");
+    options.Conventions.AuthorizePage("/Medications/Index", "AdminOrRejestratorka");
+    options.Conventions.AuthorizePage("/Reports/Index", "AdminOrRejestratorka");
+});
 
 builder.Services.AddScoped<PatientMapper>();
 builder.Services.AddScoped<VisitMapper>();
@@ -160,5 +176,6 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
+app.MapRazorPages();
 
 app.Run();
