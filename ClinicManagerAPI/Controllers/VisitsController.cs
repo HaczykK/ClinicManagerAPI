@@ -44,6 +44,15 @@ namespace ClinicManagerAPI.Controllers
             return Ok(visits);
         }
 
+        [HttpGet("active")]
+        [AllowAnonymous]
+        [ProducesResponseType(typeof(IReadOnlyList<ActiveVisitDto>), StatusCodes.Status200OK)]
+        public async Task<ActionResult<IReadOnlyList<ActiveVisitDto>>> GetActive()
+        {
+            var visits = await _visitService.GetActiveVisitsAsync();
+            return Ok(visits);
+        }
+
         [HttpGet("{id:int}")]
         [ProducesResponseType(typeof(VisitDetailDto), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]

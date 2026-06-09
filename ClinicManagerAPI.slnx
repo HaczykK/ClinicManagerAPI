@@ -1,4 +1,5 @@
 <Solution>
+  <Project Path="ClinicManagerAPI.PerformanceTests/ClinicManagerAPI.PerformanceTests.csproj" />
   <Project Path="ClinicManagerAPI.Tests/ClinicManagerAPI.Tests.csproj" />
   <Project Path="ClinicManagerAPI/ClinicManagerAPI.csproj" />
 </Solution>

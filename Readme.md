@@ -159,9 +159,29 @@ Status builda widoczny jest w badge na górze tego pliku oraz w zakładce **Acti
 - Uruchom test z 50 równoległymi użytkownikami, 100 żądaniami.
 - Zapisz **raport PDF z wynikami testu** (czas odpowiedzi, throughput, błędy).
 
+#### Uruchomienie testów wydajnościowych
+
+1. Uruchom API (z seedem danych):
+   ```bash
+   dotnet run --project ClinicManagerAPI/ClinicManagerAPI.csproj
+   ```
+2. W drugim terminalu uruchom test NBomber:
+   ```bash
+   dotnet run --project ClinicManagerAPI.PerformanceTests/ClinicManagerAPI.PerformanceTests.csproj
+   ```
+3. Raporty (HTML, CSV, TXT) zostaną zapisane w folderze `ClinicManagerAPI.PerformanceTests/reports/`.
+4. Domyślny adres API: `http://localhost:5214`. Przy innym porcie ustaw zmienną środowiskową:
+   ```bash
+   # PowerShell
+   $env:API_BASE_URL = "http://localhost:5214"
+   dotnet run --project ClinicManagerAPI.PerformanceTests/ClinicManagerAPI.PerformanceTests.csproj
+   ```
+
+> Endpoint `GET /api/visits/active` jest bez autoryzacji — wyłącznie do testów wydajnościowych. Nie używaj go w produkcji bez zabezpieczenia.
+
 #### 📎 Plik: `nbomber-report.pdf`
-#### 📎 Kod testu: np. `PerformanceTests/VisitsLoadTest.cs`
-#### 📎 Kod endpointu: np. `Controllers/VisitsController.cs`
+#### 📎 Kod testu: `ClinicManagerAPI.PerformanceTests/VisitsLoadTest.cs`
+#### 📎 Kod endpointu: `Controllers/VisitsController.cs`
 
 ---
 
@@ -226,6 +246,9 @@ class ClinicalNote { Author, Content, Timestamp }
 ├── .github/
 │   └── workflows/
 │       └── dotnet-ci.yml    // pipeline CI/CD
+├── ClinicManagerAPI.PerformanceTests/
+│   ├── VisitsLoadTest.cs    // scenariusz NBomber
+│   └── Program.cs
 ├── ClinicManagerAPI/
 │   ├── Controllers/
 │   ├── DTOs/

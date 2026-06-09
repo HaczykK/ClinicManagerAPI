@@ -21,5 +21,6 @@ namespace ClinicManagerAPI.Services
         Task<VisitDto> AssignDoctorAsync(int id, string doctorId);
         Task DeleteAsync(int id);
         Task<IReadOnlyList<VisitListDto>> GetTodayVisitsAsync();
+        Task<IReadOnlyList<ActiveVisitDto>> GetActiveVisitsAsync();
     }
 }

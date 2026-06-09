@@ -198,6 +198,18 @@ namespace ClinicManagerAPI.Services
             return _mapper.ToListDtos(visits);
         }
 
+        public async Task<IReadOnlyList<ActiveVisitDto>> GetActiveVisitsAsync()
+        {
+            var visits = await _context.Visits
+                .Include(v => v.Patient)
+                .Include(v => v.AssignedDoctor)
+                .Where(v => v.Status != VisitStatus.Anulowana)
+                .OrderByDescending(v => v.Date)
+                .ToListAsync();
+
+            return visits.Select(ToActiveVisitDto).ToList();
+        }
+
         private IQueryable<Visit> QueryWithDoctor() =>
             _context.Visits.Include(v => v.AssignedDoctor);
 
@@ -209,6 +221,22 @@ namespace ClinicManagerAPI.Services
                 .Include(v => v.ProceduresPerformed)
                     .ThenInclude(p => p.PrescribedMedications)
                         .ThenInclude(pm => pm.Medication);
+
+        private ActiveVisitDto ToActiveVisitDto(Visit visit)
+        {
+            var baseDto = _mapper.ToDto(visit);
+
+            return new ActiveVisitDto
+            {
+                Id = baseDto.Id,
+                Date = baseDto.Date,
+                Status = baseDto.Status,
+                AssignedDoctorId = baseDto.AssignedDoctorId,
+                AssignedDoctorName = baseDto.AssignedDoctorName,
+                PatientId = baseDto.PatientId,
+                Patient = _patientMapper.ToDto(visit.Patient!)
+            };
+        }
 
         private VisitDetailDto ToDetailDto(Visit visit)
         {
