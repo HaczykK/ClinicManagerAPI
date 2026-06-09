@@ -41,13 +41,13 @@ public class IndexModel : PageModel
         var doctors = await _userManager.GetUsersInRoleAsync("Lekarz");
         Doctors = doctors.OrderBy(d => d.LastName).ThenBy(d => d.FirstName).ToList();
 
-        UpcomingVisitsDate ??= DateTime.Today;
+        UpcomingVisitsDate ??= DateTime.UtcNow.Date;
     }
 
     public async Task<IActionResult> OnGetDownloadCostReportAsync()
     {
         var pdf = await _pdfService.GenerateCostReportPdf(Filter);
-        return File(pdf, "application/pdf", $"raport-kosztow-{DateTime.Now:yyyyMMdd}.pdf");
+        return File(pdf, "application/pdf", $"raport-kosztow-{DateTime.UtcNow:yyyyMMdd}.pdf");
     }
 
     public async Task<IActionResult> OnGetDownloadUpcomingVisitsAsync()

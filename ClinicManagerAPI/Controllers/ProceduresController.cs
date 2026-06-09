@@ -55,6 +55,27 @@ namespace ClinicManagerAPI.Controllers
             }
         }
 
+        [HttpPut("procedures/{id:int}")]
+        [Authorize(Roles = "Lekarz,Admin")]
+        [ProducesResponseType(typeof(ProcedurePerformedDto), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<ActionResult<ProcedurePerformedDto>> Update(int id, [FromBody] UpdateProcedurePerformedDto dto)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            try
+            {
+                var updated = await _procedureService.UpdateAsync(id, dto);
+                return Ok(updated);
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(new { message = ex.Message });
+            }
+        }
+
         [HttpDelete("procedures/{id:int}")]
         [Authorize(Roles = "Admin")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]

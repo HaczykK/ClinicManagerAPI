@@ -7,6 +7,7 @@ namespace ClinicManagerAPI.Services
     {
         Task<IReadOnlyList<ProcedurePerformedDto>> GetByVisitIdAsync(int visitId);
         Task<ProcedurePerformedDto> CreateAsync(CreateProcedurePerformedDto dto);
+        Task<ProcedurePerformedDto> UpdateAsync(int id, UpdateProcedurePerformedDto dto);
         Task DeleteAsync(int id);
         Task<PrescribedMedicationDto> AddMedicationAsync(int procedureId, CreatePrescribedMedicationDto dto);
         Task DeletePrescribedMedicationAsync(int id);

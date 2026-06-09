@@ -72,6 +72,23 @@ namespace ClinicManagerAPI.Controllers
             }
         }
 
+        [HttpPut("medical-records/{id:int}")]
+        [Authorize(Roles = "Admin,Rejestratorka,Lekarz")]
+        [ProducesResponseType(typeof(MedicalRecordDto), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<ActionResult<MedicalRecordDto>> Update(int id, [FromBody] UpdateMedicalRecordDto dto)
+        {
+            try
+            {
+                var updated = await _medicalRecordService.UpdateAsync(id, dto);
+                return Ok(updated);
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(new { message = ex.Message });
+            }
+        }
+
         [HttpDelete("medical-records/{id:int}")]
         [Authorize(Roles = "Admin")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]

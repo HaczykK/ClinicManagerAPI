@@ -75,13 +75,27 @@ namespace ClinicManagerAPI.Controllers
                 });
             }
 
+            // Przypisz rolę (domyślnie Rejestratorka)
+            var role = model.Role;
+            if (!await _roleManager.RoleExistsAsync(role))
+            {
+                return BadRequest(new AuthResponseDto
+                {
+                    Success = false,
+                    Errors = new List<string> { $"Rola '{role}' nie istnieje." }
+                });
+            }
+
+            await _userManager.AddToRoleAsync(user, role);
+
             return Ok(new AuthResponseDto
             {
                 Success = true,
                 UserId = user.Id,
                 Email = user.Email,
                 FirstName = user.FirstName,
-                LastName = user.LastName
+                LastName = user.LastName,
+                Roles = new List<string> { role }
             });
         }
 

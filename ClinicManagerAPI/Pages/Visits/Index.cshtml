@@ -60,6 +60,51 @@
     </div>
 </form>
 
+@if (User.IsInRole("Rejestratorka") || User.IsInRole("Admin"))
+{
+    <div class="card shadow-sm mb-4 border-primary">
+        <div class="card-header bg-primary text-white">
+            <h2 class="h5 mb-0">Umów nową wizytę</h2>
+        </div>
+        <div class="card-body">
+            <form method="post" asp-page-handler="Create">
+                <div class="row g-3">
+                    <div class="col-md-3">
+                        <label class="form-label">Data wizyty</label>
+                        <input type="datetime-local" asp-for="CreateInput.Date" class="form-control" required step="any" asp-format="{0:yyyy-MM-ddTHH:mm}" />
+                        <span asp-validation-for="CreateInput.Date" class="text-danger"></span>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Pacjent</label>
+                        <select asp-for="CreateInput.PatientId" class="form-select" required>
+                            <option value="">Wybierz pacjenta...</option>
+                            @foreach (var patient in Model.AllPatients)
+                            {
+                                <option value="@patient.Id">@patient.FirstName @patient.LastName (@patient.Pesel)</option>
+                            }
+                        </select>
+                        <span asp-validation-for="CreateInput.PatientId" class="text-danger"></span>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Lekarz</label>
+                        <select asp-for="CreateInput.AssignedDoctorId" class="form-select">
+                            <option value="">Bez przypisania (dowolny)</option>
+                            @foreach (var doctor in Model.Doctors)
+                            {
+                                <option value="@doctor.Id">@doctor.FirstName @doctor.LastName</option>
+                            }
+                        </select>
+                        <span asp-validation-for="CreateInput.AssignedDoctorId" class="text-danger"></span>
+                    </div>
+                    <div class="col-md-2 d-flex align-items-end">
+                        <button type="submit" class="btn btn-success w-100">Umów</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+}
+
 <div class="card shadow-sm">
     <div class="table-responsive">
         <table class="table table-hover mb-0">

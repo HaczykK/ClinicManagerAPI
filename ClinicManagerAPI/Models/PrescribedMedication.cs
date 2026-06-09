@@ -15,6 +15,7 @@ namespace ClinicManagerAPI.Models
         [Required]
         public string Dosage { get; set; } = string.Empty;
 
+        [Range(1, int.MaxValue, ErrorMessage = "Ilość musi być większa od zera.")]
         public int Quantity { get; set; }
     }
 }

@@ -53,6 +53,18 @@ namespace ClinicManagerAPI.Services
             return _procedureMapper.ToDto(procedure);
         }
 
+        public async Task<ProcedurePerformedDto> UpdateAsync(int id, UpdateProcedurePerformedDto dto)
+        {
+            var procedure = await _context.ProceduresPerformed.FindAsync(id)
+                ?? throw new KeyNotFoundException($"Procedura o id {id} nie została znaleziona.");
+
+            procedure.Description = dto.Description;
+            procedure.ServiceCost = dto.ServiceCost;
+            await _context.SaveChangesAsync();
+
+            return _procedureMapper.ToDto(procedure);
+        }
+
         public async Task DeleteAsync(int id)
         {
             var procedure = await _context.ProceduresPerformed.FindAsync(id)

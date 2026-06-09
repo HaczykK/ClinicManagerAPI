@@ -14,6 +14,7 @@ namespace ClinicManagerAPI.DTOs.Patients
 
         [Required(ErrorMessage = "PESEL jest wymagany.")]
         [StringLength(11, MinimumLength = 11, ErrorMessage = "PESEL musi mieć dokładnie 11 znaków.")]
+        [RegularExpression(@"^\d{11}$", ErrorMessage = "PESEL musi składać się z dokładnie 11 cyfr.")]
         public string Pesel { get; set; } = string.Empty;
 
         [MaxLength(50)]

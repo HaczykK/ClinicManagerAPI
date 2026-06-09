@@ -43,7 +43,9 @@ namespace ClinicManagerAPI.Controllers
         }
 
         [HttpGet("active")]
+#if DEBUG
         [AllowAnonymous]
+#endif
         [ProducesResponseType(typeof(IReadOnlyList<ActiveVisitDto>), StatusCodes.Status200OK)]
         public async Task<ActionResult<IReadOnlyList<ActiveVisitDto>>> GetActive()
         {

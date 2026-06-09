@@ -636,7 +636,7 @@ public class PdfService : IPdfService
                 row.RelativeItem().Text(t =>
                 {
                     t.Span("Wygenerowano: ").FontSize(8).FontColor(Colors.Grey.Medium);
-                    t.Span(DateTime.Now.ToString("dd.MM.yyyy HH:mm")).FontSize(8).FontColor(Colors.Grey.Medium);
+                    t.Span(DateTime.UtcNow.ToString("dd.MM.yyyy HH:mm")).FontSize(8).FontColor(Colors.Grey.Medium);
                 });
                 row.RelativeItem().AlignRight().Text(t =>
                 {

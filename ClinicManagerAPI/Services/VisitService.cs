@@ -187,7 +187,7 @@ namespace ClinicManagerAPI.Services
 
         public async Task<IReadOnlyList<VisitListDto>> GetTodayVisitsAsync()
         {
-            var today = DateTime.Today;
+            var today = DateTime.UtcNow.Date;
             var tomorrow = today.AddDays(1);
 
             var visits = await QueryWithDoctor()

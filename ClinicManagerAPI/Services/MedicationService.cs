@@ -64,6 +64,15 @@ namespace ClinicManagerAPI.Services
             var medication = await _context.Medications.FindAsync(id)
                 ?? throw new KeyNotFoundException($"Lek o id {id} nie został znaleziony.");
 
+            var isUsed = await _context.PrescribedMedications
+                .AnyAsync(pm => pm.MedicationId == id);
+
+            if (isUsed)
+            {
+                throw new InvalidOperationException(
+                    "Nie można usunąć leku, ponieważ jest przypisany do co najmniej jednej recepty.");
+            }
+
             _context.Medications.Remove(medication);
             await _context.SaveChangesAsync();
         }

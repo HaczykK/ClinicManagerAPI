@@ -35,7 +35,12 @@
                     <label asp-for="Input.RememberMe" class="form-check-label"></label>
                 </div>
 
-                <button type="submit" class="btn btn-primary w-100">Zaloguj się</button>
+                <button type="submit" class="btn btn-primary w-100 mb-3">Zaloguj się</button>
+
+                <div class="text-center">
+                    <span class="text-muted">Nie masz konta?</span>
+                    <a asp-page="Register">Zarejestruj się</a>
+                </div>
             </form>
         </div>
     </div>

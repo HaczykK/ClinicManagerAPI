@@ -81,6 +81,7 @@ builder.Services.AddRazorPages(options =>
 {
     options.Conventions.AuthorizeFolder("/");
     options.Conventions.AllowAnonymousToPage("/Auth/Login");
+    options.Conventions.AllowAnonymousToPage("/Auth/Register");
     options.Conventions.AuthorizePage("/Patients/Create", "AdminOrRejestratorka");
     options.Conventions.AuthorizePage("/Medications/Index", "AdminOrRejestratorka");
     options.Conventions.AuthorizePage("/Reports/Index", "AdminOrRejestratorka");

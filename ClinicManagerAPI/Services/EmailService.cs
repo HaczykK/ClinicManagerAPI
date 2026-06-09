@@ -24,6 +24,8 @@ public class EmailService : IEmailService
         byte[] attachment,
         string attachmentName)
     {
+        return;
+
         var message = new MimeMessage();
         message.From.Add(MailboxAddress.Parse(_settings.FromEmail));
         message.To.Add(MailboxAddress.Parse(to));

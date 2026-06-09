@@ -63,6 +63,6 @@ public class ReportsController : JwtApiControllerBase
     public async Task<IActionResult> GetCostReport([FromQuery] CostReportFilter filter)
     {
         var pdf = await _pdfService.GenerateCostReportPdf(filter);
-        return File(pdf, "application/pdf", $"raport-kosztow-{DateTime.Now:yyyyMMdd}.pdf");
+        return File(pdf, "application/pdf", $"raport-kosztow-{DateTime.UtcNow:yyyyMMdd}.pdf");
     }
 }

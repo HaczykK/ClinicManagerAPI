@@ -33,19 +33,18 @@
         <h2 class="h6 mb-0">Dodaj nowy lek</h2>
     </div>
     <div class="card-body">
-        <form method="post" asp-page-handler="Create" class="row g-2 align-items-end">
+        <form method="post" asp-page-handler="Create" class="row g-2 align-items-start">
+            <div asp-validation-summary="All" class="text-danger w-100 mb-2"></div>
             <div class="col-md-5">
                 <label asp-for="CreateInput.Name" class="form-label">Nazwa</label>
                 <input asp-for="CreateInput.Name" class="form-control" />
-                <span asp-validation-for="CreateInput.Name" class="text-danger"></span>
             </div>
             <div class="col-md-4">
                 <label asp-for="CreateInput.UnitPrice" class="form-label">Cena jednostkowa (zł)</label>
-                <input asp-for="CreateInput.UnitPrice" class="form-control" type="number" step="0.01" min="0" />
-                <span asp-validation-for="CreateInput.UnitPrice" class="text-danger"></span>
+                <input asp-for="CreateInput.UnitPrice" class="form-control" type="text" placeholder="np. 20.50" />
             </div>
-            <div class="col-md-3">
-                <button type="submit" class="btn btn-primary w-100">Dodaj</button>
+            <div class="col-md-3 mt-4">
+                <button type="submit" class="btn btn-primary w-100" style="margin-top: 8px;">Dodaj</button>
             </div>
         </form>
     </div>
@@ -90,22 +89,27 @@
 
                                 <div class="modal fade" id="editModal-@medication.Id" tabindex="-1" aria-hidden="true">
                                     <div class="modal-dialog">
-                                        <div class="modal-content">
+                                        <div class="modal-content text-start">
                                             <form method="post" asp-page-handler="Edit">
                                                 <div class="modal-header">
                                                     <h5 class="modal-title">Edytuj lek</h5>
                                                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                                                 </div>
                                                 <div class="modal-body">
+                                                    <div asp-validation-summary="All" class="text-danger mb-3"></div>
                                                     <input type="hidden" name="EditId" value="@medication.Id" />
                                                     <div class="mb-3">
                                                         <label class="form-label">Nazwa</label>
-                                                        <input name="EditInput.Name" value="@medication.Name" class="form-control" required />
+                                                        <!-- Zachowanie wartości z ModelState jeśli to ten formularz z błędem -->
+                                                        <input name="EditInput.Name" 
+                                                               value="@(Model.EditId == medication.Id && !ModelState.IsValid ? Model.EditInput.Name : medication.Name)" 
+                                                               class="form-control" />
                                                     </div>
                                                     <div class="mb-3">
                                                         <label class="form-label">Cena jednostkowa (zł)</label>
-                                                        <input name="EditInput.UnitPrice" value="@medication.UnitPrice.ToString("0.00", System.Globalization.CultureInfo.InvariantCulture)"
-                                                               class="form-control" type="number" step="0.01" min="0" required />
+                                                        <input name="EditInput.UnitPrice" 
+                                                               value="@(Model.EditId == medication.Id && !ModelState.IsValid ? Model.EditInput.UnitPrice : medication.UnitPrice.ToString("0.00", System.Globalization.CultureInfo.InvariantCulture))"
+                                                               class="form-control" type="text" />
                                                     </div>
                                                 </div>
                                                 <div class="modal-footer">
@@ -125,6 +129,12 @@
     </div>
 </div>
 
-@section Scripts {
-    <partial name="_ValidationScriptsPartial" />
+@if (!ModelState.IsValid && Model.EditId > 0)
+{
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            var myModal = new bootstrap.Modal(document.getElementById('editModal-@Model.EditId'));
+            myModal.show();
+        });
+    </script>
 }

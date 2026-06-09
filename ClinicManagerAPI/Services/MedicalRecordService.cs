@@ -77,6 +77,17 @@ namespace ClinicManagerAPI.Services
             return _mapper.ToDto(record);
         }
 
+        public async Task<MedicalRecordDto> UpdateAsync(int id, UpdateMedicalRecordDto dto)
+        {
+            var record = await _context.MedicalRecords.FindAsync(id)
+                ?? throw new KeyNotFoundException($"Dokument kartoteki o id {id} nie został znaleziony.");
+
+            record.Description = dto.Description;
+            await _context.SaveChangesAsync();
+
+            return _mapper.ToDto(record);
+        }
+
         public async Task DeleteAsync(int id)
         {
             var record = await _context.MedicalRecords.FindAsync(id)

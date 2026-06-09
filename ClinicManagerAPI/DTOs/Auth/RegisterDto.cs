@@ -22,5 +22,12 @@ namespace ClinicManagerAPI.DTOs.Auth
 
         [MaxLength(200)]
         public string? Specialization { get; set; }
+
+        /// <summary>
+        /// Rola użytkownika. Dozwolone: Lekarz, Rejestratorka. Domyślnie: Rejestratorka.
+        /// Rola Admin nie może być przypisana przy rejestracji.
+        /// </summary>
+        [RegularExpression(@"^(Lekarz|Rejestratorka)$", ErrorMessage = "Dozwolone role: Lekarz, Rejestratorka.")]
+        public string Role { get; set; } = "Rejestratorka";
     }
 }
