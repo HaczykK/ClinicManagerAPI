@@ -44,13 +44,13 @@ public class IndexModel : PageModel
         UpcomingVisitsDate ??= DateTime.UtcNow.Date;
     }
 
-    public async Task<IActionResult> OnGetDownloadCostReportAsync()
+    public async Task<IActionResult> OnPostDownloadCostReportAsync()
     {
         var pdf = await _pdfService.GenerateCostReportPdf(Filter);
         return File(pdf, "application/pdf", $"raport-kosztow-{DateTime.UtcNow:yyyyMMdd}.pdf");
     }
 
-    public async Task<IActionResult> OnGetDownloadUpcomingVisitsAsync()
+    public async Task<IActionResult> OnPostDownloadUpcomingVisitsAsync()
     {
         var date = UpcomingVisitsDate ?? DateTime.Today;
         var pdf = await _pdfService.GenerateUpcomingVisitsPdf(date);

@@ -1,8 +1,28 @@
 @page "{id:int}"
 @model ClinicManagerAPI.Pages.Visits.DetailsModel
+@using ClinicManagerAPI.DTOs.ClinicalNotes
+@using ClinicManagerAPI.DTOs.Procedures
+@using ClinicManagerAPI.DTOs.PrescribedMedications
 @{
     ViewData["Title"] = "Szczegóły wizyty";
     var visit = Model.Visit!;
+    var canEdit = Model.CanEdit;
+    var isActive = visit.Status == VisitStatus.WTrakcie;
+}
+
+@if (TempData["SuccessMessage"] is string success)
+{
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        @success
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+@if (TempData["ErrorMessage"] is string error)
+{
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        @error
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
 }
 
 <div class="page-header d-flex justify-content-between align-items-start flex-wrap gap-2">
@@ -15,21 +35,60 @@
             </span>
         </p>
     </div>
-    <div class="d-flex gap-2 flex-wrap">
-        <a asp-page-handler="VisitCardPdf" asp-route-id="@visit.Id" class="btn btn-outline-primary">
-            Pobierz kartę wizyty (PDF)
+    <div class="d-flex gap-2 flex-wrap align-items-center">
+        @* ── Przyciski zmiany statusu ── *@
+        @if (canEdit)
+        {
+            @if (visit.Status == VisitStatus.Zaplanowana)
+            {
+                <form method="post" asp-page-handler="ChangeStatus" class="d-inline">
+                    <input type="hidden" name="id" value="@visit.Id" />
+                    <input type="hidden" name="newStatus" value="@((int)VisitStatus.WTrakcie)" />
+                    <button type="submit" class="btn btn-warning btn-sm">
+                        <i class="bi bi-play-fill"></i> Rozpocznij wizytę
+                    </button>
+                </form>
+            }
+            @if (visit.Status == VisitStatus.WTrakcie)
+            {
+                <form method="post" asp-page-handler="ChangeStatus" class="d-inline">
+                    <input type="hidden" name="id" value="@visit.Id" />
+                    <input type="hidden" name="newStatus" value="@((int)VisitStatus.Zakonczona)" />
+                    <button type="submit" class="btn btn-success btn-sm">
+                        <i class="bi bi-check-circle"></i> Zakończ wizytę
+                    </button>
+                </form>
+            }
+        }
+        
+        @if (Model.CanCancel && (visit.Status == VisitStatus.Zaplanowana || visit.Status == VisitStatus.WTrakcie))
+        {
+            <form method="post" asp-page-handler="ChangeStatus" class="d-inline"
+                  onsubmit="return confirm('Czy na pewno chcesz anulować tę wizytę?');">
+                <input type="hidden" name="id" value="@visit.Id" />
+                <input type="hidden" name="newStatus" value="@((int)VisitStatus.Anulowana)" />
+                <button type="submit" class="btn btn-outline-danger btn-sm">
+                    Anuluj wizytę
+                </button>
+            </form>
+        }
+
+        @* ── Przyciski PDF ── *@
+        <a asp-page-handler="VisitCardPdf" asp-route-id="@visit.Id" class="btn btn-outline-primary btn-sm">
+            Karta wizyty (PDF)
         </a>
         @if (User.IsInRole("Lekarz") || User.IsInRole("Admin"))
         {
-            <a asp-page-handler="PrescriptionPdf" asp-route-id="@visit.Id" class="btn btn-outline-success">
-                Pobierz receptę (PDF)
+            <a asp-page-handler="PrescriptionPdf" asp-route-id="@visit.Id" class="btn btn-outline-success btn-sm">
+                Recepta (PDF)
             </a>
         }
-        <a asp-page="Index" class="btn btn-outline-secondary">Powrót</a>
+        <a asp-page="Index" class="btn btn-outline-secondary btn-sm">Powrót</a>
     </div>
 </div>
 
-<div class="row g-4">
+@* ═══════════ Dane pacjenta i lekarza ═══════════ *@
+<div class="row g-4 mt-1">
     <div class="col-lg-6">
         <div class="card shadow-sm h-100">
             <div class="card-header bg-white">
@@ -46,10 +105,18 @@
             </div>
         </div>
     </div>
+
+    @* ═══════════ Procedury ═══════════ *@
     <div class="col-lg-6">
         <div class="card shadow-sm h-100">
-            <div class="card-header bg-white">
+            <div class="card-header bg-white d-flex justify-content-between align-items-center">
                 <h2 class="h5 mb-0">Procedury</h2>
+                @if (canEdit && isActive)
+                {
+                    <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#addProcedureModal">
+                        + Dodaj procedurę
+                    </button>
+                }
             </div>
             <div class="card-body p-0">
                 @if (visit.Procedures.Count == 0)
@@ -62,9 +129,20 @@
                         @foreach (var procedure in visit.Procedures)
                         {
                             <div class="list-group-item">
-                                <div class="d-flex justify-content-between">
+                                <div class="d-flex justify-content-between align-items-center">
                                     <strong>@procedure.Description</strong>
-                                    <span class="text-muted">@procedure.ServiceCost.ToString("N2") zł</span>
+                                    <div class="d-flex align-items-center gap-2">
+                                        <span class="text-muted">@procedure.ServiceCost.ToString("N2") zł</span>
+                                        @if (canEdit && isActive)
+                                        {
+                                            <button type="button" class="btn btn-outline-primary btn-sm"
+                                                    data-bs-toggle="modal"
+                                                    data-bs-target="#addMedModal"
+                                                    onclick="document.getElementById('medProcedureIdInput').value='@procedure.Id'">
+                                                + Lek
+                                            </button>
+                                        }
+                                    </div>
                                 </div>
                                 @if (procedure.PrescribedMedications.Count > 0)
                                 {
@@ -80,13 +158,26 @@
                     </div>
                 }
             </div>
+            @if (visit.Procedures.Count > 0)
+            {
+                <div class="card-footer bg-white text-end">
+                    <strong>Razem: @visit.Procedures.Sum(p => p.ServiceCost).ToString("N2") zł</strong>
+                </div>
+            }
         </div>
     </div>
 </div>
 
+@* ═══════════ Notatki kliniczne ═══════════ *@
 <div class="card shadow-sm mt-4">
-    <div class="card-header bg-white">
+    <div class="card-header bg-white d-flex justify-content-between align-items-center">
         <h2 class="h5 mb-0">Notatki kliniczne</h2>
+        @if (canEdit && isActive)
+        {
+            <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#addNoteModal">
+                + Dodaj notatkę
+            </button>
+        }
     </div>
     <div class="card-body">
         @if (visit.ClinicalNotes.Count == 0)
@@ -108,3 +199,109 @@
         }
     </div>
 </div>
+
+@* ══════════════════════════════════════════════════ *@
+@* ════════  MODALE — widoczne tylko dla lekarza  ════════ *@
+@* ══════════════════════════════════════════════════ *@
+@if (canEdit && isActive)
+{
+    @* ── Modal: Dodaj notatkę kliniczną ── *@
+    <div class="modal fade" id="addNoteModal" tabindex="-1" aria-labelledby="addNoteModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <form method="post" asp-page-handler="AddNote">
+                    <input type="hidden" name="id" value="@visit.Id" />
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="addNoteModalLabel">Nowa notatka kliniczna</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label for="noteContent" class="form-label">Treść notatki <span class="text-danger">*</span></label>
+                            <textarea class="form-control" id="noteContent" name="NoteContent" rows="5"
+                                      placeholder="Wywiad, rozpoznanie, zalecenia..." required></textarea>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Anuluj</button>
+                        <button type="submit" class="btn btn-primary">Dodaj notatkę</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    @* ── Modal: Dodaj procedurę ── *@
+    <div class="modal fade" id="addProcedureModal" tabindex="-1" aria-labelledby="addProcedureModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <form method="post" asp-page-handler="AddProcedure">
+                    <input type="hidden" name="id" value="@visit.Id" />
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="addProcedureModalLabel">Nowa procedura medyczna</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label for="procedureDescription" class="form-label">Opis procedury <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="procedureDescription" name="ProcedureDescription"
+                                   placeholder="np. Badanie ogólne i pomiar ciśnienia" required />
+                        </div>
+                        <div class="mb-3">
+                            <label for="procedureCost" class="form-label">Koszt świadczenia (zł) <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="procedureCost" name="ProcedureServiceCost"
+                                   placeholder="np. 150,00" required />
+                            <div class="form-text">Użyj kropki lub przecinka jako separatora dziesiętnego.</div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Anuluj</button>
+                        <button type="submit" class="btn btn-primary">Dodaj procedurę</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    @* ── Modal: Przepisz lek do procedury ── *@
+    <div class="modal fade" id="addMedModal" tabindex="-1" aria-labelledby="addMedModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <form method="post" asp-page-handler="AddMedication">
+                    <input type="hidden" name="id" value="@visit.Id" />
+                    <input type="hidden" id="medProcedureIdInput" name="MedProcedureId" value="" />
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="addMedModalLabel">Przepisz lek</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label for="medSelect" class="form-label">Lek z katalogu <span class="text-danger">*</span></label>
+                            <select class="form-select" id="medSelect" name="MedMedicationId" required>
+                                <option value="" disabled selected>— Wybierz lek —</option>
+                                @foreach (var med in Model.AllMedications)
+                                {
+                                    <option value="@med.Id">@med.Name (@med.UnitPrice.ToString("N2") zł)</option>
+                                }
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="medDosage" class="form-label">Dawkowanie <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="medDosage" name="MedDosage"
+                                   placeholder="np. 400 mg co 8 godzin" required />
+                        </div>
+                        <div class="mb-3">
+                            <label for="medQuantity" class="form-label">Ilość <span class="text-danger">*</span></label>
+                            <input type="number" class="form-control" id="medQuantity" name="MedQuantity"
+                                   min="1" value="1" required />
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Anuluj</button>
+                        <button type="submit" class="btn btn-primary">Przepisz lek</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+}
