@@ -106,6 +106,8 @@ builder.Services.AddScoped<IPdfService, PdfService>();
 
 builder.Services.Configure<SmtpSettings>(
     builder.Configuration.GetSection("SmtpSettings"));
+builder.Services.Configure<ReportSettings>(
+    builder.Configuration.GetSection("ReportSettings"));
 builder.Services.AddScoped<IEmailService, EmailService>();
 builder.Services.AddHostedService<UpcomingVisitsReportBackgroundService>();
 

@@ -11,14 +11,14 @@ namespace ClinicManagerAPI.Data
             var context = serviceProvider.GetRequiredService<ApplicationDbContext>();
             var userManager = serviceProvider.GetRequiredService<UserManager<ApplicationUser>>();
 
+            await SeedUserAsync(userManager, "admin@clinic.pl", "Admin123!", "Adam", "Administrator", null, "Admin");
+            var lekarz = await SeedUserAsync(userManager, "lekarz@clinic.pl", "Lekarz123!", "Andrzej", "Nowak", "Internista", "Lekarz");
+            await SeedUserAsync(userManager, "rejestratorka@clinic.pl", "Rejestratorka123!", "Karolina", "Kowalska", null, "Rejestratorka");
+
             if (await context.Patients.AnyAsync())
             {
                 return;
             }
-
-            await SeedUserAsync(userManager, "admin@clinic.pl", "Admin123!", "Adam", "Administrator", null, "Admin");
-            var lekarz = await SeedUserAsync(userManager, "lekarz@clinic.pl", "Lekarz123!", "Andrzej", "Nowak", "Internista", "Lekarz");
-            await SeedUserAsync(userManager, "rejestratorka@clinic.pl", "Rejestratorka123!", "Karolina", "Kowalska", null, "Rejestratorka");
 
             var medications = SeedMedications(context);
             var patients = SeedPatients(context);
