@@ -4,6 +4,7 @@ using ClinicManagerAPI.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace ClinicManagerAPI.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260613103808_AddPeselIndex")]
+    partial class AddPeselIndex
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -310,11 +313,13 @@ namespace ClinicManagerAPI.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("AssignedDoctorId");
+
+                    b.HasIndex("Date");
+
                     b.HasIndex("PatientId");
 
                     b.HasIndex("Status");
-
-                    b.HasIndex("AssignedDoctorId", "Date");
 
                     b.ToTable("Visits");
                 });

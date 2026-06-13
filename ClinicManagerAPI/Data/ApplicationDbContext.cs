@@ -52,8 +52,7 @@ namespace ClinicManagerAPI.Data
 
             modelBuilder.Entity<Patient>().HasIndex(p => p.Pesel).IsUnique();
             modelBuilder.Entity<Patient>().HasIndex(p => p.LastName);
-            modelBuilder.Entity<Visit>().HasIndex(v => v.Date);
-            modelBuilder.Entity<Visit>().HasIndex(v => v.AssignedDoctorId);
+            modelBuilder.Entity<Visit>().HasIndex(v => new { v.AssignedDoctorId, v.Date });
             modelBuilder.Entity<Visit>().HasIndex(v => v.Status);
         }
     }

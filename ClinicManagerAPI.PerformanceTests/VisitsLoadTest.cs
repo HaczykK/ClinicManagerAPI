@@ -9,7 +9,7 @@ public static class VisitsLoadTest
 {
     public static void Run()
     {
-        var baseUrl = Environment.GetEnvironmentVariable("API_BASE_URL") ?? "http://localhost:5214";
+        var baseUrl = Environment.GetEnvironmentVariable("API_BASE_URL") ?? "https://localhost:7050";
         var httpClient = Http.CreateDefaultClient();
 
         var scenario = Scenario.Create("get_active_visits", async context =>
