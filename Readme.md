@@ -23,7 +23,7 @@ Projekt powinien mieć przejrzystą strukturę, modularność, oraz używać now
 
 ## 🧑‍🤝‍🧑 Zespół
 
-- Zespół: **2 osoby**
+- Zespół: **2 osoby - Kamil Haczyk i Kamil Karpiel**
 - Praca nad repozytorium GitHub (wymagana historia commitów)
 
 ---
@@ -43,7 +43,7 @@ dotnet build ClinicManagerAPI.slnx
 dotnet run --project ClinicManagerAPI/ClinicManagerAPI.csproj
 ```
 
-Aplikacja startuje pod adresem: `http://localhost:5214`
+Aplikacja startuje pod adresem: `http://localhost:7050`
 
 ### Konta testowe (seed)
 
@@ -170,10 +170,10 @@ Status builda widoczny jest w badge na górze tego pliku oraz w zakładce **Acti
    dotnet run --project ClinicManagerAPI.PerformanceTests/ClinicManagerAPI.PerformanceTests.csproj
    ```
 3. Raporty (HTML, CSV, TXT) zostaną zapisane w folderze `ClinicManagerAPI.PerformanceTests/reports/`.
-4. Domyślny adres API: `http://localhost:5214`. Przy innym porcie ustaw zmienną środowiskową:
+4. Domyślny adres API: `http://localhost:7050`. Przy innym porcie ustaw zmienną środowiskową:
    ```bash
    # PowerShell
-   $env:API_BASE_URL = "http://localhost:5214"
+   $env:API_BASE_URL = "http://localhost:7050"
    dotnet run --project ClinicManagerAPI.PerformanceTests/ClinicManagerAPI.PerformanceTests.csproj
    ```
 
